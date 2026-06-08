@@ -28,10 +28,29 @@
 | 검색 | GET | `/api/search?q=` | 정재봉 |
 | 알림 | GET/PATCH | `/api/notifications` | 송유미 |
 
+## ⚠️ 멀티테넌트 격리 — `company_id` 필수 (전 파트 공통)
+
+`meeting_reservations` · `meeting_minutes` · `action_items` 테이블에 **`company_id` 컬럼**이 있습니다. (회사 단위 조회/통계/검색을 위해 비정규화)
+
+**데이터를 생성(insert)하는 파트는 반드시 `company_id`를 함께 저장해야 합니다:**
+| 테이블 | 담당 | `company_id` 출처 |
+|--------|------|------------------|
+| `meeting_reservations` | 김승현 | 예약하는 회의실(`meeting_rooms`)의 company_id |
+| `meeting_minutes` | 허남 | 연결된 예약의 company_id |
+| `action_items` | 이은석 | 회의록의 company_id |
+
+> `company_id`를 안 넣으면 대시보드·검색·업무 목록에서 그 데이터가 안 보입니다(회사 격리에서 누락). insert 시 `g.company_id` 또는 부모 레코드의 company_id를 넣으세요.
+
 ## 상태값
 - **회의 예약**: `RESERVED` / `IN_PROGRESS` / `DONE` / `CANCELLED`
 - **업무**: `TODO` / `IN_PROGRESS` / `DONE` / `BLOCKED`
 - **알림 타입**: `MEETING_REMINDER` / `TASK_ASSIGNED` / `INVITE`
+
+## 업무·검색·대시보드 응답 (정재봉)
+- `GET /api/tasks?status=&assignee_id=` → `[{id, task, status, due_date, assignee:{email,name}}]`
+- `PATCH /api/tasks/<id>/status` body `{status}`, `PATCH /api/tasks/<id>/assignee` body `{assignee_id}`
+- `GET /api/dashboard` → `{today_meetings, my_tasks, recent_meetings, meeting_stats:{total,this_week}, task_stats:{todo,in_progress,done,blocked}}`
+- `GET /api/search?q=` → `{reservations:[], minutes:[], tasks:[]}`
 
 ## 에러 응답 형식
 ```json
