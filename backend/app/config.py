@@ -1,5 +1,10 @@
 import os
 
+from dotenv import load_dotenv
+
+# backend/.env 자동 로드 (없으면 OS 환경변수 사용)
+load_dotenv()
+
 
 class Config:
     SECRET_KEY: str = os.environ['SECRET_KEY']
