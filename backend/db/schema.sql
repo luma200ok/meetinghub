@@ -1,5 +1,9 @@
 -- MeetingHub AI — Supabase 스키마 (학습용 베이스)
 -- PRD §15 데이터베이스 기준. 컬럼 타입/제약은 각자 보완.
+--
+-- ⚠️ 이 스키마는 이미 Supabase(meetinghub 프로젝트)에 적용되어 있습니다.
+--    팀원은 다시 실행할 필요 없음. 새 컬럼/테이블이 필요하면
+--    이 파일에 추가 + 본인 브랜치 PR + 마이그레이션으로 반영하세요.
 
 -- 기업
 create table companies (
@@ -16,17 +20,6 @@ create table users (
   created_at timestamptz default now()
 );
 
--- 기업 구성원 (회원 ↔ 기업 N:M, 역할)
-create table company_members (
-  id            uuid primary key default gen_random_uuid(),
-  user_id       uuid references users(id),
-  company_id    uuid references companies(id),
-  department_id uuid,
-  position_id   uuid,
-  role          text not null default 'MEMBER',  -- ADMIN | MEMBER
-  created_at    timestamptz default now()
-);
-
 -- 부서
 create table departments (
   id         uuid primary key default gen_random_uuid(),
@@ -41,6 +34,17 @@ create table positions (
   company_id uuid references companies(id),
   name       text not null,
   level      int
+);
+
+-- 기업 구성원 (회원 ↔ 기업 N:M, 역할)
+create table company_members (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid references users(id),
+  company_id    uuid references companies(id),
+  department_id uuid references departments(id),
+  position_id   uuid references positions(id),
+  role          text not null default 'MEMBER',  -- ADMIN | MEMBER
+  created_at    timestamptz default now()
 );
 
 -- 초대
@@ -122,4 +126,22 @@ create table notifications (
   created_at timestamptz default now()
 );
 
--- TODO: 각 테이블 RLS(Row Level Security) 정책으로 company_id 기반 멀티테넌트 격리 적용
+-- ---------------------------------------------------------------
+-- RLS (행 수준 보안) — 전 테이블 활성화, 정책 0개
+-- 데이터 접근은 백엔드(Flask, service_role 키)만 가능. service_role은 RLS를 무시함.
+-- 프론트의 anon/publishable 키로는 테이블 직접 접근 불가(전부 차단) → 멀티테넌트 격리.
+-- 프론트가 Supabase로 직접 데이터를 다뤄야 하면 그때 company_id 기반 정책을 추가하세요.
+-- ---------------------------------------------------------------
+alter table companies            enable row level security;
+alter table users                enable row level security;
+alter table departments          enable row level security;
+alter table positions            enable row level security;
+alter table company_members      enable row level security;
+alter table invitations          enable row level security;
+alter table meeting_rooms        enable row level security;
+alter table meeting_reservations enable row level security;
+alter table reservation_attendees enable row level security;
+alter table meeting_minutes      enable row level security;
+alter table ai_summaries         enable row level security;
+alter table action_items         enable row level security;
+alter table notifications        enable row level security;
