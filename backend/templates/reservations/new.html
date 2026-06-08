@@ -1,0 +1,18 @@
+{% extends "layouts/base.html" %}
+{% block title %}예약 생성 - MeetingHub AI{% endblock %}
+{% block heading %}예약 생성{% endblock %}
+{% block content %}
+<section class="form-panel">
+  <form>
+    <label>회의 제목<input type="text" name="title" placeholder="API 설계 회의"></label>
+    <label>회의실<select name="room"><option>회의실 A</option><option>회의실 B</option></select></label>
+    <label>담당자<input type="text" name="owner" placeholder="김승현"></label>
+    <label>참석자<input type="text" name="attendees" placeholder="이메일을 쉼표로 구분"></label>
+    <label>회의 설명<textarea name="description" rows="4"></textarea></label>
+    <label>회의 일자<input type="date" name="date"></label>
+    <label>시작 시간<input type="time" name="start_time"></label>
+    <label>회의 시간<select name="duration"><option value="30">30분</option><option value="60">60분</option></select></label>
+    <button class="button" type="submit">예약 저장</button>
+  </form>
+</section>
+{% endblock %}

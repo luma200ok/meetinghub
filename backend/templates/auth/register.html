@@ -1,0 +1,13 @@
+{% extends "layouts/base.html" %}
+{% block title %}회원가입 - MeetingHub AI{% endblock %}
+{% block heading %}회원가입{% endblock %}
+{% block content %}
+<section class="form-panel">
+  <form>
+    <label>이름<input type="text" name="name" placeholder="홍길동"></label>
+    <label>이메일<input type="email" name="email" placeholder="hong@test.com"></label>
+    <label>비밀번호<input type="password" name="password" placeholder="비밀번호"></label>
+    <button class="button" type="submit">계정 생성</button>
+  </form>
+</section>
+{% endblock %}

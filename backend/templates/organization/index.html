@@ -1,0 +1,24 @@
+{% extends "layouts/base.html" %}
+{% block title %}조직도 - MeetingHub AI{% endblock %}
+{% block heading %}조직도{% endblock %}
+{% block content %}
+<section class="split">
+  <div>
+    <h2>부서 구조</h2>
+    <ul class="tree">
+      {% for department in organization.departments %}
+      <li style="--level: {{ 0 if not department.parent_id else 1 }}">{{ department.name }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div>
+    <h2>구성원</h2>
+    <div class="table">
+      <div class="table-row table-head"><span>이름</span><span>부서</span><span>직급</span><span>상태</span></div>
+      {% for member in organization.members %}
+      <div class="table-row"><span>{{ member.name }}</span><span>{{ member.department_id }}</span><span>{{ member.position }}</span><span>{{ member.status }}</span></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

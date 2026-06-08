@@ -1,0 +1,21 @@
+{% extends "layouts/base.html" %}
+{% block title %}예약 - MeetingHub AI{% endblock %}
+{% block heading %}회의 예약{% endblock %}
+{% block content %}
+<section class="section-head">
+  <h2>예약 목록</h2>
+  <a class="button" href="{{ url_for('reservations.new') }}">예약 생성</a>
+</section>
+<section class="list">
+  {% for reservation in reservations %}
+  <article class="row">
+    <div>
+      <strong>{{ reservation.title }}</strong>
+      <span>{{ reservation.room_name }} · {{ reservation.owner_name }}</span>
+    </div>
+    <time>{{ reservation.starts_at.strftime("%Y-%m-%d %H:%M") }} - {{ reservation.ends_at.strftime("%H:%M") }}</time>
+    <span class="status">{{ reservation.status }}</span>
+  </article>
+  {% endfor %}
+</section>
+{% endblock %}

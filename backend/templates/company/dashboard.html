@@ -1,0 +1,57 @@
+{% extends "layouts/base.html" %}
+{% block title %}Dashboard - MeetingHub AI{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+{% block content %}
+<section class="metric-grid">
+  <article class="metric">
+    <span>오늘 회의</span>
+    <strong>{{ dashboard.meeting_count }}</strong>
+  </article>
+  <article class="metric accent">
+    <span>미완료 업무</span>
+    <strong>{{ dashboard.open_task_count }}</strong>
+  </article>
+  <article class="metric warm">
+    <span>최근 회의록</span>
+    <strong>{{ dashboard.recent_minutes|length }}</strong>
+  </article>
+</section>
+
+<section class="split">
+  <div>
+    <div class="section-head">
+      <h2>오늘 회의</h2>
+      <a href="{{ url_for('reservations.new') }}">예약 생성</a>
+    </div>
+    <div class="list">
+      {% for reservation in dashboard.today_meetings %}
+      <article class="row">
+        <div>
+          <strong>{{ reservation.title }}</strong>
+          <span>{{ reservation.room_name }} · {{ reservation.owner_name }}</span>
+        </div>
+        <time>{{ reservation.starts_at.strftime("%m/%d %H:%M") }}</time>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div>
+    <div class="section-head">
+      <h2>내 업무</h2>
+      <a href="{{ url_for('tasks.index') }}">전체 보기</a>
+    </div>
+    <div class="list">
+      {% for task in dashboard.my_tasks %}
+      <article class="row">
+        <div>
+          <strong>{{ task.title }}</strong>
+          <span>{{ task.assignee_name }} · {{ task.source }}</span>
+        </div>
+        <span class="status">{{ task.status }}</span>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

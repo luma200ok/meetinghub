@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}MeetingHub AI{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="{{ url_for('dashboard.index') }}">MeetingHub AI</a>
+      <nav class="nav">
+        <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+        <a href="{{ url_for('company.detail') }}">기업</a>
+        <a href="{{ url_for('organization.index') }}">조직도</a>
+        <a href="{{ url_for('meeting_rooms.index') }}">회의실</a>
+        <a href="{{ url_for('reservations.index') }}">예약</a>
+        <a href="{{ url_for('meeting_minutes.index') }}">회의록</a>
+        <a href="{{ url_for('tasks.index') }}">업무</a>
+      </nav>
+    </aside>
+    <main class="page">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">{% block eyebrow %}B2B SaaS 협업 플랫폼{% endblock %}</p>
+          <h1>{% block heading %}MeetingHub AI{% endblock %}</h1>
+        </div>
+        <div class="top-actions">
+          <a class="button ghost" href="{{ url_for('auth.login') }}">로그인</a>
+          <a class="button" href="{{ url_for('auth.register') }}">회원가입</a>
+        </div>
+      </header>
+      {% block content %}{% endblock %}
+    </main>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  </body>
+</html>

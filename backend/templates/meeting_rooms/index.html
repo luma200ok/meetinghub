@@ -1,0 +1,19 @@
+{% extends "layouts/base.html" %}
+{% block title %}회의실 - MeetingHub AI{% endblock %}
+{% block heading %}회의실 관리{% endblock %}
+{% block content %}
+<section class="section-head">
+  <h2>회의실</h2>
+  <button class="button" type="button">회의실 등록</button>
+</section>
+<section class="resource-grid">
+  {% for room in rooms %}
+  <article class="resource">
+    <strong>{{ room.name }}</strong>
+    <span>{{ room.location }} · {{ room.capacity }}명</span>
+    <p>{{ room.description }}</p>
+    <span class="status">{{ "사용" if room.is_active else "미사용" }}</span>
+  </article>
+  {% endfor %}
+</section>
+{% endblock %}

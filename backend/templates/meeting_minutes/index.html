@@ -1,0 +1,20 @@
+{% extends "layouts/base.html" %}
+{% block title %}회의록 - MeetingHub AI{% endblock %}
+{% block heading %}회의록{% endblock %}
+{% block content %}
+<section class="section-head">
+  <h2>최근 회의록</h2>
+  <a class="button" href="{{ url_for('meeting_minutes.new') }}">회의록 작성</a>
+</section>
+<section class="list">
+  {% for minute in minutes %}
+  <article class="row tall">
+    <div>
+      <strong>{{ minute.purpose }}</strong>
+      <span>{{ minute.decisions }}</span>
+      <p>{{ minute.ai_summary }}</p>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% endblock %}
