@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from flask import g
 
 from app.utils.supabase import get_supabase
+from app.services.tenant_guard import require_member_company
 
 STATUS_KEY = {
     'TODO': 'todo',
@@ -64,33 +65,21 @@ class DashboardService:
             or []
         )
 
-        # 회의 통계
-        reservations = (
-            sb.table('meeting_reservations')
-            .select('id, start_at')
-            .eq('company_id', company_id)
-            .execute()
-            .data
-            or []
-        )
+        # 회의 통계 — 전체 행을 끌어오지 않고 count 쿼리로 집계(P2-3)
         week_iso = week_start.isoformat()
-        this_week = sum(1 for r in reservations if (r.get('start_at') or '') >= week_iso)
-        meeting_stats = {'total': len(reservations), 'this_week': this_week}
-
-        # 업무 통계
-        tasks = (
-            sb.table('action_items')
-            .select('status')
-            .eq('company_id', company_id)
-            .execute()
-            .data
-            or []
+        total = self._count(sb, 'meeting_reservations', company_id)
+        this_week = self._count(
+            sb, 'meeting_reservations', company_id, lambda q: q.gte('start_at', week_iso)
         )
-        task_stats = {'todo': 0, 'in_progress': 0, 'done': 0, 'blocked': 0}
-        for t in tasks:
-            key = STATUS_KEY.get(t.get('status'))
-            if key:
-                task_stats[key] += 1
+        meeting_stats = {'total': total, 'this_week': this_week}
+
+        # 업무 통계 — 상태별 count 쿼리(P2-3)
+        task_stats = {
+            key: self._count(
+                sb, 'action_items', company_id, lambda q, s=status: q.eq('status', s)
+            )
+            for status, key in STATUS_KEY.items()
+        }
 
         return {
             'today_meetings': today_meetings,
@@ -100,11 +89,19 @@ class DashboardService:
             'task_stats': task_stats,
         }
 
+    def _count(self, sb, table: str, company_id: str, extra=None) -> int:
+        """company 스코프 count 쿼리 (head=True 로 행을 끌어오지 않음)."""
+        query = (
+            sb.table(table)
+            .select('id', count='exact', head=True)
+            .eq('company_id', company_id)
+        )
+        if extra is not None:
+            query = extra(query)
+        return query.execute().count or 0
+
     def _company_id(self) -> str:
-        company_id = getattr(g, 'company_id', None)
-        if not company_id:
-            raise ValueError('X-Company-Id 헤더가 필요합니다.')
-        return company_id
+        return require_member_company()
 
     def _user_id(self) -> str:
         user_id = getattr(getattr(g, 'user', None), 'id', None)

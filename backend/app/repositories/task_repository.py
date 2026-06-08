@@ -10,13 +10,19 @@ class ActionItemRepository(BaseRepository):
         company_id: str,
         status: str | None = None,
         assignee_id: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> list[dict]:
         query = self.table.select('*').eq('company_id', company_id)
         if status:
             query = query.eq('status', status)
         if assignee_id:
             query = query.eq('assignee_id', assignee_id)
-        rows = query.order('created_at', desc=True).execute().data or []
+        query = query.order('created_at', desc=True)
+        if limit is not None:
+            start = offset or 0
+            query = query.range(start, start + max(limit, 1) - 1)
+        rows = query.execute().data or []
         return self._attach_assignees(rows)
 
     def find_in_company(self, task_id: str, company_id: str) -> dict | None:

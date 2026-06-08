@@ -12,10 +12,14 @@ _svc = TaskService()
 @require_auth
 @require_company
 def list_tasks():
-    # 선택 필터: ?status=TODO&assignee_id=<uuid>
+    # 선택 필터: ?status=TODO&assignee_id=<uuid>&limit=20&offset=0
     status = request.args.get('status')
     assignee_id = request.args.get('assignee_id')
-    return jsonify(_svc.list(status=status, assignee_id=assignee_id))
+    limit = request.args.get('limit', type=int)
+    offset = request.args.get('offset', type=int)
+    return jsonify(
+        _svc.list(status=status, assignee_id=assignee_id, limit=limit, offset=offset)
+    )
 
 
 @tasks_bp.put('/<task_id>')
