@@ -99,7 +99,28 @@ curl -X GET http://localhost:5000/api/meeting-rooms \
   -H "X-Company-Id: <company_uuid>"
 ```
 
-## 9. 자주 하는 실수
+## 9. 에러 처리 (ApiError)
+
+서비스에서 잘못된 요청/없는 자원은 `ApiError`를 던지세요. 자동으로 `{"error": "..."}` JSON + 상태코드로 변환됩니다.
+
+```python
+from app.errors import ApiError
+
+def get(self, room_id: str) -> dict:
+    row = self.repo.find_by_id(room_id)
+    if row is None:
+        raise ApiError(404, "회의실을 찾을 수 없습니다")
+    return row
+```
+
+- `raise ApiError(400, "...")` 잘못된 입력
+- `raise ApiError(403, "...")` 권한 없음
+- `raise ApiError(404, "...")` 자원 없음
+- `raise ApiError(409, "...")` 충돌 (예: 회의실 중복 예약)
+
+> 헬스체크는 `GET /health` → `{"status":"ok"}` (인증 불필요, 배포 상태 확인용).
+
+## 10. 자주 하는 실수
 - `company_id` 필터 누락 → 다른 기업 데이터 노출
 - route에서 DB 직접 호출 → 레이어 붕괴
 - 상태값을 문자열로 아무거나 → enum(`TODO`/`RESERVED` 등) 고정값만 사용
