@@ -1,14 +1,15 @@
 from flask import Flask, jsonify
-from flask_cors import CORS
-
-from app.config import Config
-from app.errors import register_error_handlers
-from app.routes import register_blueprints
 
 
-def create_app(config_class: type = Config) -> Flask:
+def create_app(config_class: type | None = None) -> Flask:
+    from flask_cors import CORS
+
+    from app.config import Config
+    from app.errors import register_error_handlers
+    from app.routes import register_blueprints
+
     app = Flask(__name__)
-    app.config.from_object(config_class)
+    app.config.from_object(config_class or Config)
 
     CORS(app, origins=app.config['CORS_ORIGINS'])
 
@@ -19,5 +20,21 @@ def create_app(config_class: type = Config) -> Flask:
 
     register_blueprints(app)
     register_error_handlers(app)
+
+    @app.errorhandler(ValueError)
+    def handle_bad_request(error):
+        return jsonify({'error': str(error)}), 400
+
+    @app.errorhandler(KeyError)
+    def handle_missing_field(error):
+        return jsonify({'error': f'{error.args[0]} 필드가 필요합니다.'}), 400
+
+    @app.errorhandler(PermissionError)
+    def handle_forbidden(error):
+        return jsonify({'error': str(error)}), 403
+
+    @app.errorhandler(LookupError)
+    def handle_not_found(error):
+        return jsonify({'error': str(error)}), 404
 
     return app
