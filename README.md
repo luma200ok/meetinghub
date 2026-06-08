@@ -18,7 +18,7 @@ cd meetinghub
 ### 2. 패키지 설치
 
 ```bash
-npm install
+npm ci
 ```
 
 ---
