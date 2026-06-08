@@ -66,13 +66,19 @@ NEXT_PUBLIC_API_URL=http://localhost:5000
 > - `publishable 키` → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
 ### 3. Backend 실행
+> **Python 3.10 이상 필요** (openai SDK 요구사항). `python3.10 --version`으로 확인.
+
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate
+python3.10 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env          # Supabase service / OpenAI 키 입력
 python main.py                # http://localhost:5000
 ```
+
+> **macOS 주의**: 5000 포트는 AirPlay Receiver가 점유합니다. 둘 중 하나로 해결:
+> - `시스템 설정 → 일반 → AirDrop 및 Handoff → AirPlay 수신` 끄기, 또는
+> - 다른 포트로 실행: `PORT=5001 python main.py` (이때 프론트 `.env.local`의 `NEXT_PUBLIC_API_URL`도 `http://localhost:5001`로)
 
 ---
 
