@@ -76,6 +76,40 @@ python main.py                # http://localhost:5000
 
 ---
 
+## ⚠️ 협업 규칙 (필독)
+
+**`main` 브랜치에 직접 커밋·푸시 금지.** 반드시 본인 브랜치를 만들어 작업하고 PR로 병합합니다.
+
+```bash
+# 1. 항상 최신 main에서 시작
+git checkout main
+git pull origin main
+
+# 2. 본인 작업 브랜치 생성 (이름 규칙: {담당}/{기능})
+git checkout -b backend/reservation        # 예: 김승현 회의실 예약
+#   또는  frontend/dashboard, fix/login-error 등
+
+# 3. 작업 → 커밋 → 본인 브랜치 푸시
+git add .
+git commit -m "feat: 회의실 중복 예약 검증 추가"
+git push origin backend/reservation
+
+# 4. GitHub에서 Pull Request 생성 (base: main)
+#    팀원 1명 이상 리뷰 후 머지
+```
+
+| 규칙 | 내용 |
+|------|------|
+| 브랜치 이름 | `{담당영역}/{기능}` — 예: `backend/notification`, `frontend/minutes`, `fix/cors` |
+| 커밋 메시지 | `feat:` / `fix:` / `docs:` / `refactor:` + 한국어 설명 |
+| 병합 방식 | `main` 직접 푸시 ❌ → **PR(Pull Request)로만** 병합 |
+| 충돌 방지 | 작업 시작 전 항상 `git pull origin main` 후 브랜치 생성 |
+| 머지 후 | PR 머지되면 작업 브랜치 삭제 |
+
+> 본인 파트는 폴더가 거의 분리돼 있어 충돌이 적지만, `routes/__init__.py`·`db/schema.sql`·공통 타입 파일은 겹칠 수 있으니 수정 시 주의하세요.
+
+---
+
 ## 학습 가이드 📚
 
 이 레포는 **뼈대만** 만들어져 있습니다. `services/`·`repositories/` 메서드 본문은 `NotImplementedError`, 프론트 `page.tsx`는 한 줄짜리 placeholder입니다. 각자 채우면서 학습합니다.

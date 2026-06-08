@@ -55,16 +55,33 @@ sb.table('meeting_rooms').delete().eq('id', room_id).execute()
 
 테이블 구조는 [`backend/db/schema.sql`](../../backend/db/schema.sql) 참고.
 
-## 5. 작업 순서 (권장)
+## 5. 협업 규칙 (필독)
 
-1. `db/schema.sql`을 Supabase SQL Editor에서 실행해 테이블 생성
+**`main`에 직접 푸시 금지.** 본인 브랜치 → PR → 머지.
+
+```bash
+git checkout main && git pull origin main      # 항상 최신에서 시작
+git checkout -b backend/reservation            # {담당}/{기능}
+# ... 작업 ...
+git commit -m "feat: 회의실 중복 예약 검증"
+git push origin backend/reservation
+# GitHub에서 PR 생성 (base: main) → 리뷰 → 머지
+```
+
+- 브랜치 이름: `{담당영역}/{기능}` (예: `frontend/dashboard`, `fix/cors`)
+- 작업 전 항상 `git pull origin main`으로 최신화 후 브랜치 생성
+- `routes/__init__.py`, `db/schema.sql`, 공통 타입은 겹칠 수 있으니 주의
+
+## 6. 작업 순서 (권장)
+
+1. `db/schema.sql`을 Supabase SQL Editor에서 실행해 테이블 생성 (최초 1회, 보통 한 명이)
 2. 담당 `repositories/`에 레포 클래스 작성 (`BaseRepository` 상속)
 3. 담당 `services/`의 `NotImplementedError`를 하나씩 구현
 4. `models/schemas.py`에 요청/응답 스키마 추가
 5. 로컬 실행 후 API 테스트 (`curl` 또는 프론트 연결)
 6. 프론트 `page.tsx` 화면 구현
 
-## 6. 로컬 실행
+## 7. 로컬 실행
 
 ```bash
 # 백엔드
@@ -74,7 +91,7 @@ cd backend && source .venv/bin/activate && python main.py   # :5000
 cd frontend && npm run dev                                   # :3000
 ```
 
-## 7. API 테스트 예시
+## 8. API 테스트 예시
 
 ```bash
 curl -X GET http://localhost:5000/api/meeting-rooms \
@@ -82,7 +99,7 @@ curl -X GET http://localhost:5000/api/meeting-rooms \
   -H "X-Company-Id: <company_uuid>"
 ```
 
-## 8. 자주 하는 실수
+## 9. 자주 하는 실수
 - `company_id` 필터 누락 → 다른 기업 데이터 노출
 - route에서 DB 직접 호출 → 레이어 붕괴
 - 상태값을 문자열로 아무거나 → enum(`TODO`/`RESERVED` 등) 고정값만 사용
