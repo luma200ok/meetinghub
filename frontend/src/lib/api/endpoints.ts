@@ -3,6 +3,7 @@ export const ENDPOINTS = {
   AUTH_SIGNUP:       '/api/auth/signup',
   AUTH_LOGIN:        '/api/auth/login',
   AUTH_INVITE:       '/api/auth/invite',
+  AUTH_ACCEPT_INVITE: '/api/auth/invite/accept',
 
   // 기업 & 조직 (김관영)
   COMPANIES:         '/api/companies',

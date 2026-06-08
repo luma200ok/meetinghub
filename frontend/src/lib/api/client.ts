@@ -7,9 +7,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? res.statusText);
+    throw new Error(error.error ?? error.message ?? res.statusText);
+  }
+  if (res.status === 204) {
+    return undefined as T;
   }
   return res.json();
+}
+
+export function authHeaders(accessToken: string, companyId?: string): HeadersInit {
+  return {
+    Authorization: `Bearer ${accessToken}`,
+    ...(companyId ? { 'X-Company-Id': companyId } : {}),
+  };
 }
 
 export const api = {

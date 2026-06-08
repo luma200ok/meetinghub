@@ -2,6 +2,7 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from enum import Enum
+from typing import Optional
 
 
 # ---- Enum ----
@@ -30,6 +31,30 @@ class InviteRequest(BaseModel):
     company_id: str
 
 
+class AcceptInviteRequest(BaseModel):
+    token: str
+    password: str
+
+
+class CompanyCreateRequest(BaseModel):
+    name: str
+
+
+class DepartmentCreateRequest(BaseModel):
+    name: str
+    parent_id: Optional[str] = None
+
+
+class DepartmentUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    parent_id: Optional[str] = None
+
+
+class PositionCreateRequest(BaseModel):
+    name: str
+    level: Optional[int] = None
+
+
 # ---- 예시: 회의 예약 (나머지는 각자 추가) ----
 class ReservationCreateRequest(BaseModel):
     room_id: str
@@ -38,5 +63,4 @@ class ReservationCreateRequest(BaseModel):
     end_at: datetime
 
 
-# TODO: Company / Department / Position / MeetingRoom /
-#       Minute / ActionItem / Notification 스키마 추가
+# TODO: MeetingRoom / Minute / ActionItem / Notification 스키마 추가

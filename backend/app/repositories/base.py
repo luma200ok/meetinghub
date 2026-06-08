@@ -10,17 +10,23 @@ class BaseRepository:
         return get_supabase().table(self.table_name)
 
     def find_all(self, company_id: str) -> list[dict]:
-        # TODO: company_id로 멀티테넌트 필터링
-        raise NotImplementedError
+        response = self.table.select('*').eq('company_id', company_id).execute()
+        return response.data or []
 
     def find_by_id(self, row_id: str) -> dict | None:
-        raise NotImplementedError
+        response = self.table.select('*').eq('id', row_id).limit(1).execute()
+        rows = response.data or []
+        return rows[0] if rows else None
 
     def insert(self, data: dict) -> dict:
-        raise NotImplementedError
+        response = self.table.insert(data).execute()
+        rows = response.data or []
+        return rows[0] if rows else {}
 
     def update(self, row_id: str, data: dict) -> dict:
-        raise NotImplementedError
+        response = self.table.update(data).eq('id', row_id).execute()
+        rows = response.data or []
+        return rows[0] if rows else {}
 
     def delete(self, row_id: str) -> None:
-        raise NotImplementedError
+        self.table.delete().eq('id', row_id).execute()
