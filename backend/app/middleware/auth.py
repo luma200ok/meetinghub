@@ -22,15 +22,6 @@ def require_auth(f):
 
         g.user = user_response.user
 
-        # 로그인 한 유저의 company_id를 company_members 테이블에서 조회
-        try:
-            member_res = sb.table('company_members').select('company_id').eq('user_id', g.user.id).execute()
-            if member_res.data:
-                g.company_id = member_res.data[0]['company_id']
-            else:
-                return jsonify({'error': 'No company member association found'}), 403
-        except Exception as e:
-            return jsonify({'error': 'Failed to verify user company association', 'details': str(e)}), 500
-
+        g.company_id = request.headers.get('X-Company-Id')
         return f(*args, **kwargs)
     return wrapper
