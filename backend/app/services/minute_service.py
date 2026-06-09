@@ -76,15 +76,7 @@ class MinuteService:
     # ── 내부 헬퍼 ──────────────────────────────────────────────────────────────
 
     def _company_id(self) -> str:
-        # 멤버십 검증(cross-tenant IDOR 차단): 헤더 회사의 실제 구성원인지 확인한다.
-        # require_member_company() 는 ValueError(헤더없음)/PermissionError(비구성원/미인증)를
-        # 던지므로, 이 모듈의 ApiError 계약(400/403)에 맞춰 변환한다.
-        try:
-            return require_member_company()
-        except ValueError as e:
-            raise ApiError(400, str(e))
-        except PermissionError as e:
-            raise ApiError(403, str(e))
+        return require_member_company()
 
     def _user_id(self) -> str:
         # main 프로젝트: g.user = Supabase User 객체 (user.id 로 접근)

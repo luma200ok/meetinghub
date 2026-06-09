@@ -1,13 +1,12 @@
 """담당: 김관영 — 조직도 (부서 / 직급 / 직원)"""
 from flask import g
 
-from app.repositories.auth_repository import CompanyMemberRepository
 from app.repositories.organization_repository import (
     DepartmentRepository,
     OrganizationMemberRepository,
     PositionRepository,
 )
-from app.services.tenant_guard import require_member_company
+from app.services.tenant_guard import require_member_company, member_role
 
 
 class OrganizationService:
@@ -18,8 +17,7 @@ class OrganizationService:
 
     # 부서
     def list_departments(self) -> list[dict]:
-        self._require_member()
-        return self.departments.find_all(self._company_id())
+        return self.departments.find_all(require_member_company())
 
     def create_department(self, data: dict) -> dict:
         self._require_admin()
@@ -42,8 +40,7 @@ class OrganizationService:
 
     # 직급
     def list_positions(self) -> list[dict]:
-        self._require_member()
-        return self.positions.find_all(self._company_id())
+        return self.positions.find_all(require_member_company())
 
     def create_position(self, data: dict) -> dict:
         self._require_admin()
@@ -52,13 +49,9 @@ class OrganizationService:
 
     # 직원
     def list_members(self) -> list[dict]:
-        self._require_member()
-        return self.members.list_members(self._company_id())
+        return self.members.list_members(require_member_company())
 
     def _company_id(self) -> str:
-        # 멤버십 검증 일원화(cross-tenant IDOR 차단): 헤더 회사의 실제 구성원인지 확인한다.
-        # require_member_company() 는 헤더없음 → ValueError(400), 비구성원/미인증 →
-        # PermissionError(403) 를 던지며, 요청 범위 캐시로 중복 조회를 1회로 합친다.
         return require_member_company()
 
     def _user_id(self) -> str:
@@ -67,12 +60,8 @@ class OrganizationService:
             raise PermissionError('인증된 사용자를 확인할 수 없습니다.')
         return user_id
 
-    def _require_member(self) -> None:
-        # _company_id() 가 멤버십을 검증하므로 호출만으로 비구성원이 차단된다.
-        self._company_id()
-
     def _require_admin(self) -> None:
-        role = CompanyMemberRepository().role_for(self._user_id(), self._company_id())
+        role = member_role(self._user_id(), self._company_id())
         if role != 'ADMIN':
             raise PermissionError('ADMIN만 조직 정보를 변경할 수 있습니다.')
 

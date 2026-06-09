@@ -136,10 +136,10 @@ create table notifications (
 );
 
 -- ---------------------------------------------------------------
--- RLS (행 수준 보안) — 전 테이블 활성화, 정책 0개
--- 데이터 접근은 백엔드(Flask, service_role 키)만 가능. service_role은 RLS를 무시함.
--- 프론트의 anon/publishable 키로는 테이블 직접 접근 불가(전부 차단) → 멀티테넌트 격리.
--- 프론트가 Supabase로 직접 데이터를 다뤄야 하면 그때 company_id 기반 정책을 추가하세요.
+-- RLS (행 수준 보안)
+-- 백엔드는 service_role 키(RLS bypass)로 접근하므로 Flask API에는 영향 없음.
+-- 프론트가 Supabase anon/authenticated 키로 직접 조회할 때(또는 키 유출 시)를 대비한
+-- defense-in-depth. 앱 코드의 company_id 필터링에 추가적인 보호 계층 제공.
 -- ---------------------------------------------------------------
 alter table companies            enable row level security;
 alter table users                enable row level security;
@@ -154,3 +154,92 @@ alter table meeting_minutes      enable row level security;
 alter table ai_summaries         enable row level security;
 alter table action_items         enable row level security;
 alter table notifications        enable row level security;
+
+-- 멤버십 조회 헬퍼: SECURITY DEFINER로 RLS를 우회한다.
+-- company_members 정책이 USING 절에서 company_members를 다시 조회하면
+-- 무한재귀(ERROR 42P17 infinite recursion in policy)가 발생한다. 모든 정책의
+-- "내가 속한 회사 목록" 서브쿼리를 이 함수로 통일해 재귀 고리를 끊는다.
+-- (Supabase 권장 패턴: security definer 헬퍼로 멤버십 테이블 자기참조 회피)
+create or replace function public.user_company_ids()
+  returns setof uuid
+  language sql
+  stable
+  security definer
+  set search_path = ''
+as $$
+  select company_id from public.company_members where user_id = auth.uid()
+$$;
+
+-- 정책: company_id가 있는 테이블 — 해당 회사 멤버만 SELECT 가능
+create policy "Users can view their own company's departments"
+  on departments for select
+  using (company_id in (select public.user_company_ids()));
+
+create policy "Users can view their own company's positions"
+  on positions for select
+  using (company_id in (select public.user_company_ids()));
+
+create policy "Users can view their own company members"
+  on company_members for select
+  using (company_id in (select public.user_company_ids()));
+
+create policy "Users can view their own company's meeting rooms"
+  on meeting_rooms for select
+  using (company_id in (select public.user_company_ids()));
+
+create policy "Users can view their own company's reservations"
+  on meeting_reservations for select
+  using (company_id in (select public.user_company_ids()));
+
+create policy "Users can view their own company's minutes"
+  on meeting_minutes for select
+  using (company_id in (select public.user_company_ids()));
+
+create policy "Users can view their own company's action items"
+  on action_items for select
+  using (company_id in (select public.user_company_ids()));
+
+create policy "Users can view invitations for their company"
+  on invitations for select
+  using (company_id in (select public.user_company_ids()));
+
+-- 정책: 참석자는 자신이 속한 예약의 attendee 데이터 조회 가능
+create policy "Users can view reservations they attend"
+  on reservation_attendees for select
+  using (
+    reservation_id in (
+      select id from meeting_reservations
+      where company_id in (select public.user_company_ids())
+    )
+  );
+
+-- 정책: AI 요약은 회의록을 통해 간접 접근
+create policy "Users can view summaries of their company's minutes"
+  on ai_summaries for select
+  using (
+    minute_id in (
+      select id from meeting_minutes
+      where company_id in (select public.user_company_ids())
+    )
+  );
+
+-- 정책: 알림은 본인 것만
+create policy "Users can view their own notifications"
+  on notifications for select
+  using (user_id = auth.uid());
+
+-- 정책: users 테이블은 기본 정보만, 자신 또는 같은 회사 멤버만 조회
+create policy "Users can view own profile or same-company users"
+  on users for select
+  using (
+    id = auth.uid()
+    or id in (
+      select user_id from company_members
+      where company_id in (select public.user_company_ids())
+    )
+  );
+
+-- 정책: companies 테이블은 자신이 속한 회사만 조회
+create policy "Users can view their own companies"
+  on companies for select
+  using (id in (select public.user_company_ids()));
