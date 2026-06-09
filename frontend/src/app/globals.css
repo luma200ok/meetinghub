@@ -6,21 +6,71 @@
 }
 
 @theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-hanken: var(--font-hanken-grotesk);
 
-  --color-primary: #1c648e;
-  --color-on-primary: #ffffff;
-  --color-primary-container: #7cb9e8;
-  --color-on-primary-container: #00496d;
+  /* Stitch 테마 컬러들 (PR7 화면: 로그인/회원가입/온보딩 등) */
+  --color-on-primary-fixed-variant: #004b70;
   --color-secondary: #3b665b;
-  --color-on-secondary: #ffffff;
-  --color-secondary-container: #bae9db;
+  --color-primary-fixed: #cae6ff;
+  --color-tertiary-fixed: #e1e1f5;
+  --color-outline-variant: #c0c7cf;
+  --color-on-tertiary-fixed: #191b29;
+  --color-on-primary-container: #00496d;
+  --color-error: #ba1a1a;
+  --color-inverse-surface: #263142;
+  --color-on-surface: #111c2c;
+  --color-on-primary: #ffffff;
+  --color-surface-tint: #1c648e;
+  --color-on-secondary-fixed-variant: #224e44;
   --color-on-secondary-container: #3f6b60;
-  --color-tertiary: #5c5d6e;
   --color-on-tertiary: #ffffff;
+  --color-surface-container: #e7eeff;
+  --color-error-container: #ffdad6;
+  --color-surface-container-highest: #d8e3fa;
+  --color-tertiary-container: #b1b1c4;
+  --color-surface-dim: #cfdaf1;
+  --color-on-error: #ffffff;
+  --color-outline: #71787f;
+  --color-primary-fixed-dim: #90cdfd;
+  --color-surface-variant: #d8e3fa;
+  --color-primary-container: #7cb9e8;
+  --color-primary: #1c648e;
+  --color-on-secondary: #ffffff;
+  --color-secondary-fixed-dim: #a2d0c2;
+  --color-on-primary-fixed: #001e30;
+  --color-on-tertiary-fixed-variant: #444655;
+  --color-secondary-container: #bae9db;
+  --color-tertiary-fixed-dim: #c5c5d8;
+  --color-on-error-container: #93000a;
+  --color-on-background: #111c2c;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-tertiary-container: #424453;
+  --color-inverse-on-surface: #ebf1ff;
+  --color-tertiary: #5c5d6e;
+  --color-surface-bright: #f9f9ff;
+  --color-surface-container-low: #f0f3ff;
+  --color-surface: #f9f9ff;
+  --color-secondary-fixed: #bdecde;
+  --color-on-secondary-fixed: #00201a;
+  --color-inverse-primary: #90cdfd;
+  --color-surface-container-high: #dee8ff;
+  --color-on-surface-variant: #41484e;
+
+  /* Spacing */
+  --spacing-stack-md: 16px;
+  --spacing-margin-mobile: 16px;
+  --spacing-container-max-width: 1440px;
+  --spacing-stack-lg: 32px;
+  --spacing-margin-desktop: 48px;
+  --spacing-gutter: 24px;
+  --spacing-unit: 4px;
+  --spacing-stack-sm: 8px;
+
+  /* main 호환: 기본 배경/전경 + 레거시 _custom 컬러 (회의실 페이지 등 main 화면용) */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --color-background-custom: #f9f9ff;
   --color-on-background-custom: #111c2c;
   --color-surface-custom: #f9f9ff;
@@ -29,11 +79,6 @@
   --color-on-surface-variant-custom: #41484e;
   --color-outline-custom: #71787f;
   --color-outline-variant-custom: #c0c7cf;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f0f3ff;
-  --color-surface-container: #e7eeff;
-  --color-surface-container-high: #dee8ff;
-  --color-surface-container-highest: #d8e3fa;
   --color-error-custom: #ba1a1a;
   --color-on-error-custom: #ffffff;
   --color-error-container-custom: #ffdad6;
@@ -50,5 +95,81 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), sans-serif;
 }
+
+/* Stitch Custom Animations & UI Utilities */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.pastel-glow {
+  filter: blur(60px);
+  opacity: 0.4;
+  z-index: -1;
+}
+
+.cta-hover:hover {
+  transform: scale(1.02);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Landing Page Specific Utilities */
+.soft-card {
+  background: #ffffff;
+  border-radius: 2rem;
+  border: 1px solid #e7eeff;
+  transition: all 0.3s ease;
+}
+.soft-card:hover {
+  box-shadow: 0 12px 24px -10px rgba(28, 100, 142, 0.1);
+  transform: translateY(-2px);
+}
+.pastel-gradient {
+  background: radial-gradient(circle at 50% -20%, #cae6ff 0%, #f9f9ff 75%);
+}
+.mask-fade-bottom {
+  mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+}
+
+/* AI 회의록 분석 특화 스타일 */
+.ai-glow {
+  box-shadow: 0 0 20px rgba(124, 185, 232, 0.2), inset 0 0 10px rgba(124, 185, 232, 0.1);
+}
+.ai-gradient-text {
+  background: linear-gradient(90deg, #1c648e, #7cb9e8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #dee8ff;
+  border-radius: 10px;
+}
+.pastel-overlay {
+  background: linear-gradient(135deg, rgba(124, 185, 232, 0.08) 0%, rgba(186, 233, 219, 0.08) 100%);
+}
+
+
+
