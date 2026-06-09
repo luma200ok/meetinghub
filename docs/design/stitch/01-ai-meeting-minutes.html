@@ -1,0 +1,417 @@
+<!DOCTYPE html><html class="light" lang="ko" style="width: 1280px; height: 1024px; overflow: hidden; position: relative;"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>AI 회의 분석 및 회의록 (통합 UI)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "background": "#f9f9ff",
+                    "on-primary-fixed": "#001e30",
+                    "inverse-primary": "#90cdfd",
+                    "tertiary": "#5c5d6e",
+                    "on-secondary-container": "#3f6b60",
+                    "inverse-surface": "#263142",
+                    "secondary-fixed-dim": "#a2d0c2",
+                    "outline": "#71787f",
+                    "on-secondary": "#ffffff",
+                    "on-surface-variant": "#41484e",
+                    "on-secondary-fixed": "#00201a",
+                    "secondary": "#3b665b",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed": "#e1e1f5",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#b1b1c4",
+                    "outline-variant": "#c0c7cf",
+                    "surface-variant": "#d8e3fa",
+                    "surface-tint": "#1c648e",
+                    "error-container": "#ffdad6",
+                    "on-error": "#ffffff",
+                    "primary-container": "#7cb9e8",
+                    "tertiary-fixed-dim": "#c5c5d8",
+                    "inverse-on-surface": "#ebf1ff",
+                    "surface-container-low": "#f0f3ff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#dee8ff",
+                    "surface-container": "#e7eeff",
+                    "on-secondary-fixed-variant": "#224e44",
+                    "on-primary": "#ffffff",
+                    "on-surface": "#111c2c",
+                    "surface-container-highest": "#d8e3fa",
+                    "primary-fixed-dim": "#90cdfd",
+                    "on-primary-fixed-variant": "#004b70",
+                    "on-background": "#111c2c",
+                    "on-tertiary-container": "#424453",
+                    "surface-dim": "#cfdaf1",
+                    "secondary-container": "#bae9db",
+                    "primary-fixed": "#cae6ff",
+                    "secondary-fixed": "#bdecde",
+                    "primary": "#1c648e",
+                    "on-tertiary-fixed-variant": "#444655",
+                    "error": "#ba1a1a",
+                    "on-primary-container": "#00496d",
+                    "surface": "#f9f9ff",
+                    "surface-bright": "#f9f9ff",
+                    "on-tertiary-fixed": "#191b29"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "1rem",
+                    "2xl": "1.5rem",
+                    "3xl": "2rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "stack-lg": "32px",
+                    "margin-mobile": "16px",
+                    "unit": "4px",
+                    "gutter": "24px",
+                    "container-max-width": "1440px",
+                    "margin-desktop": "48px",
+                    "stack-md": "16px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Hanken Grotesk"],
+                    "label-md": ["Hanken Grotesk"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "label-sm": ["Hanken Grotesk"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "body-sm": ["Hanken Grotesk"],
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "body-md": ["Hanken Grotesk"],
+                    "headline-md": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "14px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        body { background-color: #f9f9ff; font-family: 'Hanken Grotesk', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .ai-glow { box-shadow: 0 0 20px rgba(124, 185, 232, 0.2), inset 0 0 10px rgba(124, 185, 232, 0.1); }
+        .ai-gradient-text { background: linear-gradient(90deg, #1c648e, #7cb9e8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #dee8ff; border-radius: 10px; }
+        .pastel-overlay { background: linear-gradient(135deg, rgba(124, 185, 232, 0.1) 0%, rgba(186, 233, 219, 0.1) 100%); }
+    </style>
+</head>
+<body class="overflow-hidden h-screen">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface border-r border-outline-variant flex flex-col py-6 px-4 z-50">
+<div class="mb-8 px-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[32px]" style="font-variation-settings: 'FILL' 1;">hub</span>
+<div>
+<h1 class="font-headline-md text-[20px] font-black text-primary leading-tight tracking-tight">MeetingHub</h1>
+<p class="font-body-sm text-[11px] text-on-surface-variant uppercase tracking-wider">Productive Serenity</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">대시보드</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="font-label-md text-label-md">캘린더</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">meeting_room</span>
+<span class="font-label-md text-label-md">회의실 예약</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary-container text-on-primary-container font-semibold transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-label-md text-label-md">AI 회의록</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-md text-label-md">워크플로우</span>
+</a>
+</nav>
+<div class="mt-auto space-y-4 pt-6">
+<button class="w-full py-3 bg-primary text-on-primary rounded-2xl font-label-md text-label-md shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
+            새 분석 시작
+        </button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">설정</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">지원</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant flex justify-between items-center px-10 z-40"><div class="flex items-center gap-8 flex-1"><div class="relative w-full max-w-md"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span><input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm text-on-surface placeholder:text-on-surface-variant/50 transition-all" placeholder="회의록, 리포트, 팀원 검색..." type="text"></div></div><div class="flex items-center gap-6"><div class="flex items-center gap-3"><button class="px-4 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold hover:bg-primary/20 transition-all">AI 채팅</button><div class="flex items-center gap-1"><button class="p-2 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">notifications</span></button><button class="p-2 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">history</span></button></div></div><div class="h-8 w-[1px] bg-outline-variant"></div><button class="flex items-center gap-3 group"><div class="w-9 h-9 rounded-full overflow-hidden bg-surface-container-highest border border-outline-variant transition-transform group-hover:scale-105"><img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTyxNbtW0m31PPxE-WLF7CI5U7rFj_3Rj794hxS3OUQt-P5byj9uddh1D5tHcZKXYBMlBz2kn8lZj-9ZhfzqQQWltPRqoa2PJ5y-t_SRJQFk5CEuORbkegATF3tw5_zOuxsDEzSu12gczdtSnV4V1ik3w5GlmIFVNpW_1K10CBAtHHxwjfk3EFToXijUJj7Dt_U5pzRfqjT-LnrReyIIj8PiXbksmbHvqlphppI5d0N80mVJDkNdm6_jKj5Yx62pOxwjRz77XqhBdZ"></div><div class="text-left hidden lg:block"><span class="text-sm font-semibold text-on-surface block leading-none">마커스 첸</span><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tight">팀 리더</span></div></button></div></header>
+<!-- Main Content -->
+<main class="ml-64 h-[calc(100vh-64px)] flex flex-col mt-16 overflow-y-auto custom-scrollbar px-8 pt-8 pb-0">
+<!-- Metadata Row -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<nav class="flex gap-2 text-on-surface-variant font-label-sm text-label-sm mb-2">
+<span class="">회의</span>
+<span class="opacity-40">/</span>
+<span class="text-primary font-bold">프로젝트 퀀텀 전략</span>
+</nav>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">주간 경영진 정례 회의</h2>
+<div class="flex gap-6 mt-3 font-body-sm text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary/60">calendar_today</span>
+                    2023년 10월 24일 • 오전 10:00
+                </div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary/60">groups</span>
+                    참석자 8명
+                </div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary/60">meeting_room</span>
+                    가상 회의실: Alpha-9
+                </div>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[18px]">share</span> 공유
+            </button>
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary text-on-primary font-label-md text-label-md shadow-md shadow-primary/10 hover:opacity-90 transition-all">
+<span class="material-symbols-outlined text-[18px]">download</span> 보고서 내보내기
+            </button>
+</div>
+</div>
+<!-- Dashboard Grid -->
+<div class="flex-1 grid grid-cols-12 gap-8 min-h-0">
+<!-- Left Column: Video & Transcript -->
+<div class="col-span-8 flex flex-col gap-8 min-h-0">
+<!-- Video Player -->
+<div class="relative w-full aspect-video rounded-3xl bg-on-background overflow-hidden shadow-xl shadow-on-background/5 group">
+<img alt="회의실 영상" class="w-full h-full object-cover opacity-70" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoM17PBig3vJODdW2CakqE0wcfcWU3essUfpY7YqNuz7liKD3vb4AsnRz0ojnXjG5mJ5J5VQffYlQdj1TM05YFselWRT8XUHBTzVy_7yTDGeI2PWZSZATJap-kGC8fnQxjHKuicWL3XasVkc8Wm5Qqyg5GlkpFyDYWdV7SIxm9TmlIbX-E59NowNe1iGqBtyYmNTS5mdXzRwHB7x4PE9hCtvonHt2oi5D7hyFpPf8-OUKAek9D3pDO7BjkphD0HOu9YoM9U8s0kxw5">
+<div class="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-all">
+<button class="h-20 w-20 bg-white/25 backdrop-blur-xl rounded-full flex items-center justify-center text-white border border-white/30 hover:scale-110 hover:bg-white/40 transition-all shadow-2xl">
+<span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+</div>
+<div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+<div class="flex items-center gap-6 text-white">
+<span class="font-label-sm text-label-sm font-medium">14:02 / 45:00</span>
+<div class="flex-1 h-1.5 bg-white/20 rounded-full relative">
+<div class="absolute top-0 left-0 h-full w-1/3 bg-primary-container rounded-full"></div>
+<div class="absolute top-1/2 left-1/3 -translate-y-1/2 h-4 w-4 bg-white rounded-full shadow-lg border-2 border-primary"></div>
+</div>
+<span class="material-symbols-outlined cursor-pointer hover:scale-110 transition-transform">fullscreen</span>
+</div>
+</div>
+</div>
+<!-- Transcript Section -->
+<div class="flex-1 bg-surface-container-lowest rounded-3xl border border-outline-variant/50 flex flex-col min-h-0 shadow-sm pastel-overlay">
+<div class="p-5 border-b border-outline-variant/30 flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md flex items-center gap-3 text-on-surface">
+<span class="material-symbols-outlined text-primary bg-primary-container/30 p-1.5 rounded-lg">notes</span>
+                        실시간 회의록
+                    </h3>
+<div class="flex gap-2">
+<span class="px-3 py-1.5 rounded-full bg-secondary-container/20 text-secondary font-label-sm text-label-sm flex items-center gap-2 border border-secondary-container/30">
+<span class="h-2 w-2 rounded-full bg-secondary animate-pulse"></span> 라이브 동기화 중
+                        </span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar" id="transcript-scroll">
+<div class="flex gap-5 group">
+<div class="h-10 w-10 rounded-2xl bg-surface-container-highest flex-shrink-0 flex items-center justify-center font-bold text-primary text-sm shadow-sm group-hover:scale-105 transition-transform">JS</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1.5">
+<span class="font-label-md text-label-md text-on-surface">제임스 스미스 (CEO)</span>
+<span class="text-on-surface-variant/60 font-label-sm text-label-sm">오전 10:02</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed p-4 bg-surface rounded-2xl rounded-tl-none border border-outline-variant/20">모두 좋은 아침입니다. Q4 로드맵부터 시작하죠. 사라, AI 통합 레이어 업데이트 상황을 알려줄 수 있나요? 다음 주 화요일 클라이언트 데모 전까지 지연 시간 문제가 반드시 해결되어야 합니다.</p>
+</div>
+</div>
+<div class="flex gap-5 group">
+<div class="h-10 w-10 rounded-2xl bg-secondary-container flex-shrink-0 flex items-center justify-center font-bold text-on-secondary-container text-sm shadow-sm group-hover:scale-105 transition-transform">SC</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1.5">
+<span class="font-label-md text-label-md text-on-surface">사라 첸 (CTO)</span>
+<span class="text-on-surface-variant/60 font-label-sm text-label-sm">오전 10:03</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed p-4 bg-secondary-container/10 rounded-2xl rounded-tl-none border border-secondary-container/20">물론입니다, 제임스. 엔지니어링 팀이 추론 엔진 최적화에 성공했습니다. <span class="bg-primary-container text-on-primary-container font-bold px-1.5 py-0.5 rounded-md">응답 시간이 40% 감소</span>하는 성과를 거두었습니다. 데모 준비는 차질 없이 진행 중입니다.</p>
+</div>
+</div>
+<div class="flex gap-5 opacity-40">
+<div class="h-10 w-10 rounded-2xl bg-surface-container-highest flex-shrink-0 flex items-center justify-center font-bold text-primary text-sm">MK</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1.5">
+<span class="font-label-md text-label-md text-on-surface">마커스 케인</span>
+<span class="text-on-surface-variant/60 font-label-sm text-label-sm">오전 10:05</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed italic p-4 bg-surface rounded-2xl rounded-tl-none border border-outline-variant/10">음성 패턴 분석 중...</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: AI Insights -->
+<div class="col-span-4 flex flex-col gap-8 min-h-0 overflow-y-auto custom-scrollbar pr-3">
+<!-- Summary Card -->
+<div class="p-7 bg-surface-container-lowest rounded-3xl border border-primary-container/40 ai-glow relative overflow-hidden group">
+<div class="absolute -top-4 -right-4 p-8 bg-primary-container/10 rounded-full blur-2xl group-hover:bg-primary-container/20 transition-all"></div>
+<div class="relative">
+<h4 class="font-headline-md text-headline-md ai-gradient-text mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                        AI 핵심 요약
+                    </h4>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        이번 회의는 프로젝트 퀀텀의 Q4 전략적 정렬에 집중했습니다. 주요 성과로는 기술적 최적화(지연 시간 40% 감소)가 보고되었습니다. 
+                        <br><br>
+<span class="font-bold text-primary">핵심 마일스톤:</span> 금요일까지 클라이언트 데모 환경 최종 구축. 전반적인 분위기는 매우 긍정적이며 협력적입니다.
+                    </p>
+</div>
+</div>
+<!-- Action Items -->
+<div class="p-7 bg-surface-container-lowest rounded-3xl border border-outline-variant/40 shadow-sm">
+<h4 class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/70 mb-5 flex items-center gap-2">
+<span class="h-1 w-1 rounded-full bg-primary"></span> 조치 사항
+                </h4>
+<ul class="space-y-5">
+<li class="flex items-start gap-4">
+<div class="relative flex items-center justify-center h-6 w-6 shrink-0 mt-1">
+<input checked="" class="rounded-lg border-primary-container text-primary focus:ring-primary/20 h-5 w-5 cursor-pointer" type="checkbox">
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-on-surface line-through opacity-40">AI 추론 엔진 최적화</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant/60 flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-xs">person</span> 담당: 엔지니어링 팀
+                            </span>
+</div>
+</li>
+<li class="flex items-start gap-4">
+<div class="relative flex items-center justify-center h-6 w-6 shrink-0 mt-1">
+<input class="rounded-lg border-outline-variant text-primary focus:ring-primary/20 h-5 w-5 cursor-pointer" type="checkbox">
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-on-surface">데모용 스테이징 환경 설정</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant/60 flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-xs">person</span> 담당: 마커스 케인 • <span class="text-primary/70">기한: 금요일</span>
+</span>
+</div>
+</li>
+<li class="flex items-start gap-4">
+<div class="relative flex items-center justify-center h-6 w-6 shrink-0 mt-1">
+<input class="rounded-lg border-outline-variant text-primary focus:ring-primary/20 h-5 w-5 cursor-pointer" type="checkbox">
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-on-surface">확장 관련 예산 할당 검토</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant/60 flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-xs">person</span> 담당: 재무팀 • <span class="text-primary/70">기한: 다음 주 월요일</span>
+</span>
+</div>
+</li>
+</ul>
+</div>
+<!-- Sentiment Trends -->
+<div class="p-7 bg-surface-container-lowest rounded-3xl border border-outline-variant/40 shadow-sm">
+<h4 class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/70 mb-5 flex items-center gap-2">
+<span class="h-1 w-1 rounded-full bg-primary"></span> 감정 분석
+                </h4>
+<div class="h-32 flex items-end justify-between gap-2 mb-5">
+<div class="w-full bg-secondary-container/20 rounded-2xl h-[40%] hover:bg-secondary-container/40 transition-all cursor-help relative group">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-on-background text-white text-[11px] py-1.5 px-2.5 rounded-lg opacity-0 group-hover:opacity-100 whitespace-nowrap shadow-xl z-10 transition-opacity">도입: 침착</div>
+</div>
+<div class="w-full bg-secondary-container/40 rounded-2xl h-[65%] hover:bg-secondary-container/60 transition-all cursor-help relative group">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-on-background text-white text-[11px] py-1.5 px-2.5 rounded-lg opacity-0 group-hover:opacity-100 whitespace-nowrap shadow-xl z-10 transition-opacity">기술: 자신감</div>
+</div>
+<div class="w-full bg-primary-container/50 rounded-2xl h-[85%] hover:bg-primary-container/70 transition-all cursor-help relative group">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-on-background text-white text-[11px] py-1.5 px-2.5 rounded-lg opacity-0 group-hover:opacity-100 whitespace-nowrap shadow-xl z-10 transition-opacity">로드맵: 열정</div>
+</div>
+<div class="w-full bg-error-container/20 rounded-2xl h-[30%] hover:bg-error-container/40 transition-all cursor-help relative group">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-on-background text-white text-[11px] py-1.5 px-2.5 rounded-lg opacity-0 group-hover:opacity-100 whitespace-nowrap shadow-xl z-10 transition-opacity">예산: 우려</div>
+</div>
+<div class="w-full bg-secondary-container/60 rounded-2xl h-[75%] hover:bg-secondary-container/80 transition-all cursor-help relative group">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-on-background text-white text-[11px] py-1.5 px-2.5 rounded-lg opacity-0 group-hover:opacity-100 whitespace-nowrap shadow-xl z-10 transition-opacity">마무리: 긍정</div>
+</div>
+</div>
+<div class="flex justify-between font-label-md text-label-md">
+<div class="flex items-center gap-2 text-secondary"><span class="h-2 w-2 rounded-full bg-secondary"></span> 82% 긍정</div>
+<div class="flex items-center gap-2 text-on-surface-variant/60"><span class="h-2 w-2 rounded-full bg-surface-container-highest"></span> 18% 중립</div>
+</div>
+</div>
+<!-- Keyword Cloud -->
+<div class="p-7 bg-surface-container-lowest rounded-3xl border border-outline-variant/40 shadow-sm">
+<h4 class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/70 mb-5 flex items-center gap-2">
+<span class="h-1 w-1 rounded-full bg-primary"></span> 주요 키워드
+                </h4>
+<div class="flex flex-wrap gap-2.5">
+<span class="px-4 py-1.5 rounded-full bg-primary-container/20 text-primary font-label-md text-label-md border border-primary-container/30 hover:bg-primary-container/30 transition-colors cursor-default">확장성</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md border border-transparent hover:border-outline-variant transition-colors cursor-default">Q4 로드맵</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md border border-transparent hover:border-outline-variant transition-colors cursor-default">클라이언트 데모</span>
+<span class="px-4 py-1.5 rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md shadow-sm">추론 레이어</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md border border-transparent hover:border-outline-variant transition-colors cursor-default">예산 할당</span>
+<span class="px-4 py-1.5 rounded-full bg-secondary-container/20 text-secondary font-label-md text-label-md border border-secondary-container/30">지연 시간</span>
+<span class="px-4 py-1.5 rounded-full bg-primary-container/20 text-primary font-label-md text-label-md border border-primary-container/30">최적화</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+    // Simple auto-scroll simulation for transcript
+    const transcript = document.getElementById('transcript-scroll');
+    let isScrolledToBottom = true;
+
+    transcript.addEventListener('scroll', () => {
+        isScrolledToBottom = transcript.scrollHeight - transcript.clientHeight <= transcript.scrollTop + 1;
+    });
+
+    // Simulating incoming transcript updates
+    setInterval(() => {
+        if (isScrolledToBottom) {
+            transcript.scrollTop = transcript.scrollHeight;
+        }
+    }, 1000);
+
+    // Mouse interactive glow effect
+    const summaryCard = document.querySelector('.ai-glow');
+    if (summaryCard) {
+        summaryCard.addEventListener('mousemove', (e) => {
+            const rect = summaryCard.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            summaryCard.style.setProperty('--mouse-x', `${x}px`);
+            summaryCard.style.setProperty('--mouse-y', `${y}px`);
+        });
+    }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>

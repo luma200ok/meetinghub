@@ -1,0 +1,234 @@
+<!DOCTYPE html><html lang="ko"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Welcome to Nexus AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body {
+            font-family: 'Hanken Grotesk', sans-serif;
+            background-color: #f9f9ff;
+            overflow: hidden;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .pastel-glow {
+            filter: blur(60px);
+            opacity: 0.4;
+            z-index: -1;
+        }
+        .cta-hover:hover {
+            transform: scale(1.02);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#004b70",
+                        "secondary": "#3b665b",
+                        "primary-fixed": "#cae6ff",
+                        "tertiary-fixed": "#e1e1f5",
+                        "outline-variant": "#c0c7cf",
+                        "on-tertiary-fixed": "#191b29",
+                        "on-primary-container": "#00496d",
+                        "error": "#ba1a1a",
+                        "inverse-surface": "#263142",
+                        "on-surface": "#111c2c",
+                        "on-primary": "#ffffff",
+                        "background": "#f9f9ff",
+                        "surface-tint": "#1c648e",
+                        "on-secondary-fixed-variant": "#224e44",
+                        "on-secondary-container": "#3f6b60",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#e7eeff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#d8e3fa",
+                        "tertiary-container": "#b1b1c4",
+                        "surface-dim": "#cfdaf1",
+                        "on-error": "#ffffff",
+                        "outline": "#71787f",
+                        "primary-fixed-dim": "#90cdfd",
+                        "surface-variant": "#d8e3fa",
+                        "primary-container": "#7cb9e8",
+                        "primary": "#1c648e",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#a2d0c2",
+                        "on-primary-fixed": "#001e30",
+                        "on-tertiary-fixed-variant": "#444655",
+                        "secondary-container": "#bae9db",
+                        "tertiary-fixed-dim": "#c5c5d8",
+                        "on-error-container": "#93000a",
+                        "on-background": "#111c2c",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#424453",
+                        "inverse-on-surface": "#ebf1ff",
+                        "tertiary": "#5c5d6e",
+                        "surface-bright": "#f9f9ff",
+                        "surface-container-low": "#f0f3ff",
+                        "surface": "#f9f9ff",
+                        "secondary-fixed": "#bdecde",
+                        "on-secondary-fixed": "#00201a",
+                        "inverse-primary": "#90cdfd",
+                        "surface-container-high": "#dee8ff",
+                        "on-surface-variant": "#41484e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "margin-mobile": "16px",
+                        "container-max-width": "1440px",
+                        "stack-lg": "32px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "stack-sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "label-md": ["Hanken Grotesk"],
+                        "headline-xl": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "body-sm": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "14px", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background min-h-screen flex items-center justify-center relative overflow-hidden">
+<!-- Background Atmospheric Elements -->
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary-container pastel-glow rounded-full"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary-container pastel-glow rounded-full"></div>
+<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-tertiary-fixed pastel-glow rounded-full"></div>
+<!-- Main Content Canvas -->
+<main class="relative z-10 w-full max-w-[1200px] px-margin-desktop">
+<div class="flex flex-col md:flex-row items-center justify-between gap-16">
+<!-- Left Side: Welcoming Illustration Area -->
+<div class="w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left">
+<div class="mb-stack-lg animate-float">
+<div class="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden shadow-2xl">
+<img alt="Welcome Workspace" class="w-full h-full object-cover" data-alt="A serene and highly professional modern office interior with a soft pastel blue and mint green color palette. Natural light floods through large windows, illuminating minimalist white furniture and lush green plants. The atmosphere is calm, productive, and optimistic, capturing the essence of collaborative workspace in a clean light-mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvqTErrQfu-uyu0fbEVyfodrCnRypDXJjSKIB0advpfxhb8_WtniEWpv562feQxQ3dGsUBlvhYH4_z5TEPOKrbvgEjtdxxxodhJWjE_tn4oFj_kxqJc5-eyOq2c8gxizFGXAGsJsw7_Smw9fOXBBepYLmx8feDaPXL7jwIsi9lZloagwu40aDxb28v2OcEmIvD5LkNhtOKgESamuGfNKH7UesZ6Wn82ZSDbfxSjdRTO4rnj_isZA4SepmbloSyH2TbbUaT4-l-xtc">
+<div class="absolute inset-0 bg-primary opacity-10 mix-blend-overlay"></div>
+</div>
+</div>
+<div class="space-y-stack-md">
+<h1 class="font-headline-xl text-headline-xl text-primary tracking-tight">
+                        환영합니다! <br>새로운 시작을 준비하세요.
+                    </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">
+                        Nexus AI의 모든 기능을 경험하기 위해 새로운 기업을 생성하거나, 기존 팀에 참여해 보세요.
+                    </p>
+</div>
+</div>
+<!-- Right Side: Action Cards -->
+<div class="w-full md:w-[480px] space-y-gutter">
+<!-- Create Company Card -->
+<div class="glass-card p-10 rounded-[2rem] border border-white/50 shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer cta-hover border-primary/20">
+<div class="flex items-start gap-stack-md">
+<div class="bg-primary-container text-on-primary-container p-4 rounded-xl">
+<span class="material-symbols-outlined text-4xl">add_business</span>
+</div>
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">기업 생성</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">
+                                새로운 조직을 만들고 AI 워크스페이스를 구성하세요. 관리자로서 팀원을 초대할 수 있습니다.
+                            </p>
+<button class="bg-primary text-on-primary px-8 py-3 rounded-full font-label-md text-label-md shadow-lg shadow-primary/20 flex items-center gap-2 group-hover:bg-on-primary-fixed-variant transition-colors">
+                                시작하기
+                                <span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Invite Code Card -->
+<div class="glass-card p-10 rounded-[2rem] border border-white/50 shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer cta-hover border-secondary/20">
+<div class="flex items-start gap-stack-md">
+<div class="bg-secondary-container text-on-secondary-container p-4 rounded-xl">
+<span class="material-symbols-outlined text-4xl">group_add</span>
+</div>
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">초대 코드 입력</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">
+                                이미 운영 중인 기업이 있나요? 공유받은 초대 코드를 입력하여 팀에 합류하세요.
+                            </p>
+<button class="border-2 border-primary text-primary px-8 py-3 rounded-full font-label-md text-label-md hover:bg-primary/5 transition-colors flex items-center gap-2">
+                                코드 입력
+                                <span class="material-symbols-outlined text-lg">key</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Optional Support Footer -->
+<div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex items-center gap-stack-sm font-label-sm text-label-sm text-on-surface-variant/60">
+<span class="material-symbols-outlined text-sm">help</span>
+        도움이 필요하신가요? 고객지원 센터에 문의하세요.
+    </div>
+<!-- Interaction Script -->
+<script>
+        document.addEventListener('mousemove', (e) => {
+            const glowElements = document.querySelectorAll('.pastel-glow');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            glowElements.forEach((el, index) => {
+                const speed = (index + 1) * 20;
+                const xOffset = (x - 0.5) * speed;
+                const yOffset = (y - 0.5) * speed;
+                el.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+            });
+        });
+
+        // Simple animation on page load
+        window.addEventListener('load', () => {
+            const cards = document.querySelectorAll('.glass-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s cubic-bezier(0.22, 1, 0.36, 1)';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 * (index + 1));
+            });
+        });
+    </script>
+</body></html>
