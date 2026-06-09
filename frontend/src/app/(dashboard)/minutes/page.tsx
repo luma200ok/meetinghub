@@ -36,13 +36,12 @@ export default function MinutesListPage() {
   }, [load]);
 
   return (
-    <main className="min-h-screen flex-1 bg-slate-50 px-6 py-8 text-slate-950">
-      <section className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-        <div className="flex items-end justify-between border-b border-slate-200 pb-5">
-          <div>
-            <p className="text-sm font-medium text-emerald-700">Minutes</p>
-            <h1 className="mt-1 text-3xl font-semibold">회의록 목록</h1>
-          </div>
+    <div className="flex flex-col gap-6 text-on-surface">
+      <div className="flex items-end justify-between border-b border-outline-variant pb-5">
+        <div>
+          <p className="text-sm font-semibold text-primary">Minutes</p>
+          <h1 className="mt-1.5 text-3xl font-bold tracking-tight text-on-background">회의록 목록</h1>
+        </div>
           <button
             className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium disabled:opacity-50"
             onClick={() => void load()}
@@ -86,7 +85,6 @@ export default function MinutesListPage() {
             </li>
           ))}
         </ul>
-      </section>
-    </main>
+    </div>
   );
 }
