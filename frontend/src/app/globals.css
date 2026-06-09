@@ -113,3 +113,22 @@ body {
   }
 }
 
+/* Landing Page Specific Utilities */
+.soft-card {
+  background: #ffffff;
+  border-radius: 2rem;
+  border: 1px solid #e7eeff;
+  transition: all 0.3s ease;
+}
+.soft-card:hover {
+  box-shadow: 0 12px 24px -10px rgba(28, 100, 142, 0.1);
+  transform: translateY(-2px);
+}
+.pastel-gradient {
+  background: radial-gradient(circle at 50% -20%, #cae6ff 0%, #f9f9ff 75%);
+}
+.mask-fade-bottom {
+  mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+}
+
+
