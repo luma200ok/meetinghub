@@ -10,12 +10,15 @@
 - 모든 경로에서 요청자가 company 구성원인지 검증 (require_member_company)
 - 담당자 지정 시 대상 user가 같은 company 구성원인지 검증 (is_member)
 """
+import uuid
+
 from flask import g
 
 from app.repositories.task_repository import ActionItemRepository
 from app.services.tenant_guard import require_member_company, member_role, is_member
 
 VALID_STATUSES = {'TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED'}
+MAX_LIMIT = 100
 
 
 class TaskService:
@@ -31,6 +34,9 @@ class TaskService:
     ) -> list[dict]:
         if status is not None:
             status = self._valid_status(status)
+        if assignee_id is not None:
+            assignee_id = self._valid_uuid(assignee_id, 'assignee_id')
+        self._validate_pagination(limit, offset)
         return self.tasks.list_in_company(
             self._company_id(), status, assignee_id, limit, offset
         )
@@ -103,6 +109,25 @@ class TaskService:
         if not is_member(assignee_id, company_id):
             raise PermissionError('해당 회사의 구성원만 담당자로 지정할 수 있습니다.')
         return assignee_id
+
+    def _valid_uuid(self, value, field: str):
+        """필터용 UUID 형식 검증(P2). 형식 오류는 ValueError(400)."""
+        try:
+            uuid.UUID(str(value))
+        except (ValueError, AttributeError, TypeError):
+            raise ValueError(f'{field} 형식이 올바르지 않습니다 (UUID).')
+        return value
+
+    def _validate_pagination(self, limit, offset) -> None:
+        """페이지네이션 범위 검증(P2): limit 1~100, offset 0 이상의 정수."""
+        if limit is not None and (
+            not isinstance(limit, int) or isinstance(limit, bool) or limit < 1 or limit > MAX_LIMIT
+        ):
+            raise ValueError(f'limit 은 1~{MAX_LIMIT} 사이의 정수여야 합니다.')
+        if offset is not None and (
+            not isinstance(offset, int) or isinstance(offset, bool) or offset < 0
+        ):
+            raise ValueError('offset 은 0 이상의 정수여야 합니다.')
 
     def _valid_status(self, status: str) -> str:
         if status not in VALID_STATUSES:

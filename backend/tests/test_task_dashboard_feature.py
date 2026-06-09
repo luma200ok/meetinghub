@@ -198,6 +198,38 @@ class TaskFeatureTest(unittest.TestCase):
             TaskService().list(limit=10, offset=20)
         repo_cls.return_value.list_in_company.assert_called_once_with('c1', None, None, 10, 20)
 
+    # ---- P2: list 입력 검증 ----
+    @patch('app.services.task_service.ActionItemRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_list_rejects_invalid_assignee_uuid(self, member_cls, repo_cls):
+        _member(member_cls)
+        with self._ctx():
+            with self.assertRaises(ValueError):
+                TaskService().list(assignee_id='not-a-uuid')
+        repo_cls.return_value.list_in_company.assert_not_called()
+
+    @patch('app.services.task_service.ActionItemRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_list_rejects_out_of_range_pagination(self, member_cls, repo_cls):
+        _member(member_cls)
+        with self._ctx():
+            for limit, offset in [(0, 0), (101, 0), (10, -1)]:
+                with self.assertRaises(ValueError):
+                    TaskService().list(limit=limit, offset=offset)
+        repo_cls.return_value.list_in_company.assert_not_called()
+
+    @patch('app.services.task_service.ActionItemRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_list_accepts_valid_uuid_assignee(self, member_cls, repo_cls):
+        _member(member_cls)
+        repo_cls.return_value.list_in_company.return_value = []
+        valid = '11111111-1111-1111-1111-111111111111'
+        with self._ctx():
+            TaskService().list(assignee_id=valid)
+        repo_cls.return_value.list_in_company.assert_called_once_with(
+            'c1', None, valid, None, None
+        )
+
 
 class SearchFeatureTest(unittest.TestCase):
     def setUp(self):
