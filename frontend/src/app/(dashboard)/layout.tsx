@@ -8,28 +8,30 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-surface text-on-surface">
-      <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-outline-variant bg-surface/95 px-4 py-2.5 backdrop-blur md:px-6">
-        <Link href="/dashboard" className="flex shrink-0 items-center gap-2">
+    <div className="flex min-h-screen bg-surface text-on-surface">
+      {/* 세로 사이드바: 로고 → 네비 → (하단) 알림벨 */}
+      <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col gap-6 border-r border-outline-variant bg-surface px-4 py-5">
+        <Link href="/dashboard" className="flex items-center gap-2 px-1">
           <span
             className="material-symbols-outlined text-2xl text-primary"
             style={{ fontVariationSettings: "'FILL' 1" }}
           >
             meeting_room
           </span>
-          <span className="hidden text-lg font-black tracking-tight text-primary sm:inline">
+          <span className="text-lg font-black tracking-tight text-primary">
             MeetingHub
           </span>
         </Link>
 
         <DashboardNav />
 
-        <div className="shrink-0">
+        <div className="mt-auto border-t border-outline-variant pt-4">
           <NotificationBell />
         </div>
-      </header>
+      </aside>
 
-      <main>{children}</main>
+      {/* 콘텐츠: 각 페이지가 자체 <main> 을 렌더(중첩 <main> 방지, #6) */}
+      <div className="min-w-0 flex-1">{children}</div>
     </div>
   );
 }
