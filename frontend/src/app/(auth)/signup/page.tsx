@@ -2,21 +2,18 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { api, authHeaders } from "@/lib/api/client";
+import { useRouter } from "next/navigation";
+import { api } from "@/lib/api/client";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 
 type SignupResponse = {
   session?: { access_token?: string | null } | null;
 };
 
-type CompanyResponse = {
-  company: { id: string; name: string };
-};
-
 export default function SignupPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [companyName, setCompanyName] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,13 +37,11 @@ export default function SignupPage() {
       }
 
       localStorage.setItem("meetinghubAccessToken", token);
-      const company = await api.post<CompanyResponse>(
-        ENDPOINTS.COMPANIES,
-        { name: companyName },
-        { headers: authHeaders(token) }
-      );
-      localStorage.setItem("meetinghubCompanyId", company.company.id);
-      setMessage(`${company.company.name} 기업이 생성되었습니다.`);
+      setMessage("회원가입에 성공했습니다! 온보딩 페이지로 이동합니다.");
+      
+      setTimeout(() => {
+        router.push("/onboarding");
+      }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "회원가입에 실패했습니다.");
     } finally {
@@ -71,12 +66,8 @@ export default function SignupPage() {
             비밀번호
             <input className="rounded-md border border-slate-300 px-3 py-2" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={6} />
           </label>
-          <label className="flex flex-col gap-2 text-sm font-medium">
-            기업명
-            <input className="rounded-md border border-slate-300 px-3 py-2" value={companyName} onChange={(event) => setCompanyName(event.target.value)} required />
-          </label>
           <button className="rounded-md bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white disabled:bg-slate-400" disabled={isSubmitting}>
-            {isSubmitting ? "처리 중" : "가입하고 기업 생성"}
+            {isSubmitting ? "처리 중" : "가입하기"}
           </button>
           {message && <p className="text-sm text-emerald-700">{message}</p>}
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -89,3 +80,4 @@ export default function SignupPage() {
     </main>
   );
 }
+

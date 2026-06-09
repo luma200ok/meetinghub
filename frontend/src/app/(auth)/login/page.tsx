@@ -2,9 +2,11 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [companyId, setCompanyId] = useState("");
@@ -29,8 +31,16 @@ export default function LoginPage() {
       }
       if (companyId) {
         localStorage.setItem("meetinghubCompanyId", companyId);
+        setMessage("로그인되었습니다. 대시보드로 이동합니다.");
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1500);
+      } else {
+        setMessage("로그인되었습니다. 온보딩을 진행합니다.");
+        setTimeout(() => {
+          router.push("/onboarding");
+        }, 1500);
       }
-      setMessage("로그인되었습니다.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "로그인에 실패했습니다.");
     } finally {
@@ -73,3 +83,4 @@ export default function LoginPage() {
     </main>
   );
 }
+
