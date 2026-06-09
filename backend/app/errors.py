@@ -20,6 +20,22 @@ def register_error_handlers(app: Flask) -> None:
     def handle_api_error(e: ApiError):
         return jsonify({'error': e.message}), e.status_code
 
+    @app.errorhandler(ValueError)
+    def handle_bad_request(error: ValueError):
+        return jsonify({'error': str(error)}), 400
+
+    @app.errorhandler(KeyError)
+    def handle_missing_field(error: KeyError):
+        return jsonify({'error': f'{error.args[0]} 필드가 필요합니다.'}), 400
+
+    @app.errorhandler(PermissionError)
+    def handle_forbidden(error: PermissionError):
+        return jsonify({'error': str(error)}), 403
+
+    @app.errorhandler(LookupError)
+    def handle_not_found(error: LookupError):
+        return jsonify({'error': str(error)}), 404
+
     @app.errorhandler(404)
     def handle_404(e):
         return jsonify({'error': 'Not found'}), 404

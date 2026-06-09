@@ -21,20 +21,4 @@ def create_app(config_class: type | None = None) -> Flask:
     register_blueprints(app)
     register_error_handlers(app)
 
-    @app.errorhandler(ValueError)
-    def handle_bad_request(error):
-        return jsonify({'error': str(error)}), 400
-
-    @app.errorhandler(KeyError)
-    def handle_missing_field(error):
-        return jsonify({'error': f'{error.args[0]} 필드가 필요합니다.'}), 400
-
-    @app.errorhandler(PermissionError)
-    def handle_forbidden(error):
-        return jsonify({'error': str(error)}), 403
-
-    @app.errorhandler(LookupError)
-    def handle_not_found(error):
-        return jsonify({'error': str(error)}), 404
-
     return app
