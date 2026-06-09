@@ -37,7 +37,7 @@ class MinuteService:
         if repo.exists_for_reservation(reservation_id):
             raise ApiError(409, "이미 해당 회의의 회의록이 존재합니다.")
 
-        return repo.create(reservation_id, content.strip(), self._user_id())
+        return repo.create(reservation_id, content.strip(), self._user_id(), company_id)
 
     def get(self, minute_id: str) -> dict:
         data = repo.find_by_id(minute_id, self._company_id())

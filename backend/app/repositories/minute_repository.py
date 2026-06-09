@@ -87,10 +87,15 @@ class MinuteRepository(BaseRepository):
             for m in minutes
         ]
 
-    def create(self, reservation_id: str, content: str, created_by: str) -> dict:
+    def create(self, reservation_id: str, content: str, created_by: str, company_id: str) -> dict:
         return (
             self.table
-            .insert({"reservation_id": reservation_id, "content": content, "created_by": created_by})
+            .insert({
+                "reservation_id": reservation_id,
+                "content": content,
+                "created_by": created_by,
+                "company_id": company_id,
+            })
             .execute()
             .data[0]
         )
