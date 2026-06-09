@@ -38,45 +38,49 @@
 ---
 
 ## 마지막 머지 PR (2026-06-09~10)
-- **#51** 업무 수동 생성(Closes #45) / **#50** RLS defense-in-depth + tenant_guard 표준화(RLS 재귀 수정 포함) / **#49** 회의록·조직도 IDOR 차단(Closes #29,#30)
-- **#48** 중복 예약 네비 제거(Closes #38) / **#43** 알림 후속(Closes #12) / **#42** 업무·대시보드 P2/P3 / **#41** 회의실 생성 재추가 / **#39** 조직도 IDOR prod-fix
+- **#58** getByReservation 401/403 인증오류 삼킴 버그(Closes #57) / **#55** 세로 사이드바 전환 + 중첩 `<main>` 해소(Closes #6) / **#54** meeting-rooms 레이아웃 + 회의록 모달 P2
+- **#51** 업무 수동 생성(Closes #45) / **#50** RLS defense-in-depth + 재귀수정 / **#49** 회의록·조직도 IDOR 차단(Closes #29,#30) / **#48** 예약 네비 정리(Closes #38) / **#43** 알림 후속(Closes #12)
 
-## 열린 PR (리뷰 중)
+## 열린 PR
 | PR | 제목 | 담당 | 상태 |
 |----|------|------|------|
-| #52 | AI 분석·Action Item 구현 + 회의록 FE 연결 (#37) | 이은석 | 🔴 블로커 — IDOR(헤더 신뢰)·tsc 빌드에러·백엔드 테스트 0건 |
-| #54 | meeting-rooms 레이아웃 + 예약 상세 | 김승현 | 🔄 리뷰 중 (백엔드 minute_service 변경 포함) |
-| #53 | 중첩 `<main>` 제거 (Closes #6) | 정재봉 | 🔄 리뷰 중 (Trivial) |
+| #52 | AI 분석·Action Item 구현 + 회의록 FE 연결 (#37) | 이은석 | 🔴 changes-requested — P1 8건(IDOR 5·502버그·빌드·테스트0). 재작업 필요 |
+| #56 | MinuteViewer 빌드 가드 (base=#52 브랜치) | 정재봉 | 🟡 #52 빌드만 푸는 서브 핫픽스 — #52 재작업 시 함께 처리 |
+
+> #53(중첩 main)은 #55로 대체되어 CLOSED. #54는 메타가 P2 수정 후 머지 완료.
 
 ## 이슈 배정 현황 (송유미·허남 부재 반영)
 | 담당 | 진행 | 완료 |
 |------|------|------|
-| 이은석(EunSeok-222) | #37(AI, #52 리뷰), #47(hydration+토큰) | #7 |
-| 김관영(Ketose333) | #31(RLS 하드닝 — #50로 정책 추가됨, 종료 검토) | #49(#29·#30), #43(#12) |
-| 김승현(HyunDove) | #44(회의록 작성), #46(회의록 상세), #15(예약 P2), #54 | #48(#38) |
-| 정재봉(luma200ok) | #6(#53로 마무리 중) | #51(#45) |
+| 이은석(EunSeok-222) | #37(AI, #52 changes-requested), #47(hydration+토큰) | #7 |
+| 김관영(Ketose333) | #31(RLS — #50로 정책+재귀수정 반영, 회귀테스트 후 종료) | #49(#29·#30), #43(#12) |
+| 김승현(HyunDove) | #44(회의록 작성 진입점), #46(회의록 상세 더미제거), #15(예약 P2) | #54, #48(#38) |
+| 정재봉(luma200ok) | (백로그 조율) | #51(#45), #58(#57), #6(#55) |
 
 ---
 
 ## 다음 작업 후보
 ### P0 (블로커)
-- [ ] **AI 실구현 머지** (이은석/#52) — IDOR(require_member_company 누락) + tsc 빌드에러(MinuteViewer) + 백엔드 테스트 0건 **수정 후** 머지. ai_service/action_item_service가 헤더(g.company_id)만 신뢰 → #49 패턴(require_member_company) 적용 필요.
+- [ ] **AI 실구현 머지** (이은석/#52) — 재작업 필요: ① ai_service/action_item_service `_company_id()`를 `require_member_company()`로 교체(#49 패턴, IDOR 5건) ② `get_summary` 멤버십 가드 ③ `generate_action_items` 502버그(프롬프트/파싱 불일치) ④ MinuteViewer 빌드가드(#56) ⑤ 백엔드 테스트 추가
 ### P1 (우선)
-- [ ] #6 통합점검 마무리 (#53 머지 시 중첩 main 해소)
+- [ ] #44 회의록 작성 진입점 (김승현)
+- [ ] #46 회의록 상세 더미데이터 제거 + 실데이터 (김승현) — minutes/[id] 이중 사이드바·목업 노출 버그 포함
 - [ ] #47 대시보드 hydration(#418) + 토큰 리프레시 (이은석)
-- [ ] 프론트 lint `set-state-in-effect` 정리
 ### P2 (후속)
 - [ ] #31 RLS — #50로 정책+재귀수정 반영됨, 회귀 테스트 후 종료 (김관영)
+- [ ] 프론트 lint `set-state-in-effect` 8건 정리 (빌드 무관 tech-debt)
+- [ ] notification mark_read 없는 알림에 `{}`+200 반환 → 404 검토 (테스트 동반 변경)
 - [ ] report.md §6 팀원 회고 작성
-- [ ] `endpoints.ts` 데드 상수 정리
 
 ---
 
 ## 알려진 이슈
 | ID | 영역 | 내용 | 상태 |
 |----|------|------|------|
-| #52 | 보안 | AI/Action-Item 서비스가 X-Company-Id 헤더만 신뢰 → cross-tenant IDOR (#49 패턴 미적용) | 🔴 리뷰서 발견, 머지 전 수정 |
-| #52 | 빌드 | `MinuteViewer.tsx` `new Date(updated_at)` — types optional화로 tsc 실패 | 🔴 머지 전 수정 |
+| #52 | 보안 | AI/Action-Item 서비스가 X-Company-Id 헤더만 신뢰 → cross-tenant IDOR 5건(#49 패턴 미적용) | 🔴 #52 재작업서 수정 |
+| #52 | 동작 | `generate_action_items` 프롬프트/파싱 불일치로 항상 502 (자동생성 미동작) | 🔴 #52 재작업서 수정 |
+| #52 | 빌드 | `MinuteViewer.tsx` `new Date(updated_at)` — types optional화로 tsc 실패 | 🟡 #56 가드로 해결안 있음 |
+| minutes/[id] | 프론트 | 이중 사이드바 + 더미데이터(제임스 스미스 등) 노출 | #46에서 처리 |
 | 소셜 | 인증 | Google/Kakao OAuth: Supabase Provider 설정 + redirect + 브라우저 플로우 **수동 검증 필요** | 미검증 |
 | lint | 프론트 | `set-state-in-effect` 8건 (빌드는 통과) | 대기 |
 | report.md | 문서 | §6 회고 미작성 | 대기 |
