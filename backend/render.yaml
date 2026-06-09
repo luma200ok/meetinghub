@@ -4,7 +4,7 @@ services:
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn main:app
+    startCommand: gunicorn main:app --workers 1
     envVars:
       # 공개값 — repo 고정 (재현 가능). SUPABASE_URL은 프론트도 쓰는 공개 주소, CORS는 허용 출처.
       - key: SUPABASE_URL
