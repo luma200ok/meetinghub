@@ -26,20 +26,21 @@ def list_tasks():
 @require_auth
 @require_company
 def update_task(task_id: str):
-    return jsonify(_svc.update(task_id, request.get_json()))
+    # 바디 없음(None) 방어 → 서비스에서 ValueError(400)로 처리
+    return jsonify(_svc.update(task_id, request.get_json(silent=True) or {}))
 
 
 @tasks_bp.patch('/<task_id>/status')
 @require_auth
 @require_company
 def update_status(task_id: str):
-    data = request.get_json()
-    return jsonify(_svc.update_status(task_id, data['status']))
+    data = request.get_json(silent=True) or {}
+    return jsonify(_svc.update_status(task_id, data.get('status')))
 
 
 @tasks_bp.patch('/<task_id>/assignee')
 @require_auth
 @require_company
 def update_assignee(task_id: str):
-    data = request.get_json()
-    return jsonify(_svc.update_assignee(task_id, data['assignee_id']))
+    data = request.get_json(silent=True) or {}
+    return jsonify(_svc.update_assignee(task_id, data.get('assignee_id')))

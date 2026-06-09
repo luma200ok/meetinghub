@@ -11,12 +11,14 @@ RESULT_LIMIT = 20
 
 class SearchService:
     def search(self, query: str) -> dict:
+        # 멤버십 검증을 항상 먼저 수행 (빈 쿼리라도 인가 일관성 유지)
+        company_id = self._company_id()
+
         q = (query or '').strip()
         empty = {'reservations': [], 'minutes': [], 'tasks': []}
         if not q:
             return empty
 
-        company_id = self._company_id()
         sb = get_supabase()
         pattern = f'%{self._escape_like(q)}%'
 

@@ -84,7 +84,11 @@ class TaskService:
         return task
 
     def _authorize_modify(self, task: dict, company_id: str) -> None:
-        """업무 수정 인가(P1-3): 담당자 본인 또는 ADMIN만 허용."""
+        """업무 수정 인가(P1-3): 담당자 본인 또는 ADMIN만 허용.
+
+        담당자가 지정되지 않은(assignee_id=None) 업무는 본인 일치가 성립할 수 없으므로
+        ADMIN만 수정 가능하다 (의도된 정책).
+        """
         user_id = self._user_id()
         if task.get('assignee_id') == user_id:
             return

@@ -203,12 +203,24 @@ class SearchFeatureTest(unittest.TestCase):
     def setUp(self):
         self.app = Flask(__name__)
 
-    def test_empty_query_returns_empty_groups(self):
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_empty_query_returns_empty_groups(self, member_cls):
+        _member(member_cls)
         with self.app.test_request_context():
             g.user = SimpleNamespace(id='u1')
             g.company_id = 'c1'
             result = SearchService().search('   ')
         self.assertEqual(result, {'reservations': [], 'minutes': [], 'tasks': []})
+
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_empty_query_non_member_rejected(self, member_cls):
+        # P2-4: 빈 쿼리라도 비구성원은 차단 (멤버십 검증을 먼저 수행)
+        member_cls.return_value.find_by_user_company.return_value = None
+        with self.app.test_request_context():
+            g.user = SimpleNamespace(id='u1')
+            g.company_id = 'c1'
+            with self.assertRaises(PermissionError):
+                SearchService().search('')
 
     def test_escape_like_escapes_wildcards(self):
         # P2-2: %, _, \ 가 리터럴로 이스케이프되는지

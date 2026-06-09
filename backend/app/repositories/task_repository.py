@@ -46,7 +46,10 @@ class ActionItemRepository(BaseRepository):
             .data
             or []
         )
-        return rows[0] if rows else {}
+        # 업데이트 대상이 없으면(동시 삭제 등 TOCTOU) 무음 빈 응답 대신 404 처리
+        if not rows:
+            raise LookupError('업무를 찾을 수 없습니다.')
+        return rows[0]
 
     def _attach_assignees(self, rows: list[dict]) -> list[dict]:
         """담당자(user) 정보를 한 번에 묶어서 붙인다 (N+1 방지)."""
