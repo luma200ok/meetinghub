@@ -87,8 +87,41 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0d0e12;
+    --foreground: #ebf1ff;
+
+    /* 다크모드 대응 테마 컬러 재정의 */
+    --color-surface-bright: #14161d;
+    --color-surface-container-low: #1a1d26;
+    --color-surface: #14161d;
+    --color-surface-container: #202432;
+    --color-surface-container-lowest: #0d0e11;
+    --color-surface-container-high: #272c3d;
+    
+    --color-on-surface: #ebf1ff;
+    --color-on-surface-variant: #a0aab5;
+    --color-on-background: #ebf1ff;
+    --color-on-background-custom: #ebf1ff;
+    --color-on-surface-custom: #ebf1ff;
+    --color-on-surface-variant-custom: #a0aab5;
+    
+    --color-outline: #8a939e;
+    --color-outline-variant: #3d4352;
+  }
+
+  .glass-card {
+    background: rgba(20, 22, 28, 0.75) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* 다크모드 시 입력 필드 배경/글씨 대비 강화 */
+  input, textarea, select {
+    background-color: #0d0e11 !important;
+    color: #ebf1ff !important;
+    border-color: #3d4352 !important;
+  }
+  input::placeholder, textarea::placeholder {
+    color: #71787f !important;
   }
 }
 
@@ -96,6 +129,16 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
+}
+
+/* 모든 입력 요소가 항상 밝은 배경과 어두운 글씨색을 갖도록 기본값 설정 (라이트모드 기준) */
+input, textarea, select {
+  color: #111c2c;
+  background-color: #ffffff;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #71787f;
 }
 
 /* Stitch Custom Animations & UI Utilities */
