@@ -17,6 +17,7 @@ class OrganizationService:
 
     # 부서
     def list_departments(self) -> list[dict]:
+        self._require_member()
         return self.departments.find_all(self._company_id())
 
     def create_department(self, data: dict) -> dict:
@@ -40,6 +41,7 @@ class OrganizationService:
 
     # 직급
     def list_positions(self) -> list[dict]:
+        self._require_member()
         return self.positions.find_all(self._company_id())
 
     def create_position(self, data: dict) -> dict:
@@ -49,6 +51,7 @@ class OrganizationService:
 
     # 직원
     def list_members(self) -> list[dict]:
+        self._require_member()
         return self.members.list_members(self._company_id())
 
     def _company_id(self) -> str:
@@ -62,6 +65,11 @@ class OrganizationService:
         if not user_id:
             raise PermissionError('인증된 사용자를 확인할 수 없습니다.')
         return user_id
+
+    def _require_member(self) -> None:
+        member = CompanyMemberRepository().find_by_user_company(self._user_id(), self._company_id())
+        if not member:
+            raise PermissionError('해당 회사의 멤버만 조회할 수 있습니다.')
 
     def _require_admin(self) -> None:
         role = CompanyMemberRepository().role_for(self._user_id(), self._company_id())
