@@ -58,7 +58,7 @@ export default function MinuteViewer({
     <div className="flex flex-col gap-3">
       <div className="text-xs text-slate-400">
         작성자: {minute.author_name ?? minute.created_by} ·{" "}
-        {new Date(minute.updated_at).toLocaleString("ko-KR")}
+        {minute.updated_at ? new Date(minute.updated_at).toLocaleString("ko-KR") : "-"}
       </div>
       <div className="whitespace-pre-wrap text-sm text-slate-800 bg-slate-50 rounded-lg p-4 min-h-[120px]">
         {minute.content}
