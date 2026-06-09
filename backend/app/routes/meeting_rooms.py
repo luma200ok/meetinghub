@@ -7,14 +7,14 @@ meeting_rooms_bp = Blueprint('meeting_rooms', __name__)
 _svc = MeetingRoomService()
 
 
-@meeting_rooms_bp.get('/')
+@meeting_rooms_bp.get('')
 @require_auth
 def list_rooms():
     from flask import g
     return jsonify(_svc.list(g.company_id))
 
 
-@meeting_rooms_bp.post('/')
+@meeting_rooms_bp.post('')
 @require_auth
 def create_room():
     from flask import g

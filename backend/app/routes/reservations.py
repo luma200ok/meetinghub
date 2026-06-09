@@ -7,14 +7,14 @@ reservations_bp = Blueprint('reservations', __name__)
 _svc = ReservationService()
 
 
-@reservations_bp.get('/')
+@reservations_bp.get('')
 @require_auth
 def list_reservations():
     from flask import g
     return jsonify(_svc.list(g.company_id))
 
 
-@reservations_bp.post('/')
+@reservations_bp.post('')
 @require_auth
 def create_reservation():
     from flask import g
