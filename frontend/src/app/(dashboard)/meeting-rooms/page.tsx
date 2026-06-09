@@ -70,15 +70,11 @@ export default function MeetingRoomsPage() {
   // 모달 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
-  const [modalRoomName, setModalRoomName] = useState("");
+  const [modalRoomId, setModalRoomId] = useState("");
   const [modalDate, setModalDate] = useState(() => formatDateString(new Date()));
   const [modalStartTime, setModalStartTime] = useState("10:00");
   const [modalEndTime, setModalEndTime] = useState("11:00");
-
-  // 조직도 및 인원 선택 상태
-  const [orgMembers, setOrgMembers] = useState<any[]>([]);
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
-  const [memberSearch, setMemberSearch] = useState("");
+  const [modalTeamSize, setModalTeamSize] = useState("");
 
   // AI 추천 문구
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
@@ -101,16 +97,6 @@ export default function MeetingRoomsPage() {
         headers: authHeaders(accessToken, companyId),
       });
       setReservations(resList);
-
-      // 조직 멤버 목록 조회
-      try {
-        const memberList = await api.get<any[]>(ENDPOINTS.MEMBERS, {
-          headers: authHeaders(accessToken, companyId),
-        });
-        setOrgMembers(memberList);
-      } catch (err) {
-        console.error("조직 정보를 불러오는데 실패했습니다:", err);
-      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "데이터를 불러오는데 실패했습니다.");
     } finally {
@@ -122,10 +108,10 @@ export default function MeetingRoomsPage() {
     void loadData();
   }, [loadData]);
 
-  // AI 회의실 추천 반응 로직 (참석 인원 수 기반)
+  // AI 회의실 추천 반응 로직
   useEffect(() => {
-    const size = selectedUserIds.length;
-    if (size > 0) {
+    const size = parseInt(modalTeamSize, 10);
+    if (!isNaN(size) && size > 0) {
       // rooms에서 정렬하여 가장 수용 능력이 작으면서 size를 만족하는 방 찾기
       const sortedRooms = [...rooms].sort((a, b) => (a.capacity || 0) - (b.capacity || 0));
       const recommended = sortedRooms.find((r) => (r.capacity || 0) >= size);
@@ -133,7 +119,7 @@ export default function MeetingRoomsPage() {
       if (recommended) {
         setAiSuggestedRoomId(recommended.id);
         setAiSuggestion(
-          `선택하신 ${size}명의 인원에게는 최적의 수용 환경을 제공하는 [${recommended.name}]이(가) 가장 적합합니다.`
+          `입력하신 ${size}명의 인원에게는 최적의 수용 환경을 제공하는 [${recommended.name}]이(가) 가장 적합합니다.`
         );
       } else {
         setAiSuggestedRoomId(null);
@@ -145,13 +131,13 @@ export default function MeetingRoomsPage() {
       setAiSuggestion(null);
       setAiSuggestedRoomId(null);
     }
-  }, [selectedUserIds, rooms]);
+  }, [modalTeamSize, rooms]);
 
   // 예약 신청
   const handleCreateReservation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!accessToken || !companyId) return;
-    if (!modalTitle || !modalRoomName || !modalDate || !modalStartTime || !modalEndTime) {
+    if (!modalTitle || !modalRoomId || !modalDate || !modalStartTime || !modalEndTime) {
       setError("필수 입력 필드를 모두 작성해 주세요.");
       return;
     }
@@ -164,33 +150,14 @@ export default function MeetingRoomsPage() {
     const end_at = `${modalDate}T${modalEndTime}:00+09:00`;
 
     try {
-      // 1. 회의실 이름으로 기존 회의실 검사 또는 생성
-      let roomId = "";
-      const existingRoom = rooms.find(
-        (r) => r.name.trim().toLowerCase() === modalRoomName.trim().toLowerCase()
-      );
-
-      if (existingRoom) {
-        roomId = existingRoom.id;
-      } else {
-        // 새 회의실 생성
-        const newRoom = await api.post<MeetingRoom>(
-          ENDPOINTS.MEETING_ROOMS,
-          { name: modalRoomName.trim() },
-          { headers: authHeaders(accessToken, companyId) }
-        );
-        roomId = newRoom.id;
-      }
-
-      // 2. 예약 생성
       await api.post<Reservation>(
         ENDPOINTS.RESERVATIONS,
         {
-          room_id: roomId,
+          room_id: modalRoomId,
           title: modalTitle,
           start_at,
           end_at,
-          user_ids: selectedUserIds,
+          user_ids: [],
         },
         {
           headers: authHeaders(accessToken, companyId),
@@ -198,13 +165,10 @@ export default function MeetingRoomsPage() {
       );
       setSuccessMsg("예약이 성공적으로 확정되었습니다!");
       setIsModalOpen(false);
-      
       // 모달 폼 초기화
       setModalTitle("");
-      setModalRoomName("");
-      setSelectedUserIds([]);
-      setMemberSearch("");
-
+      setModalRoomId("");
+      setModalTeamSize("");
       // 다시 읽어오기
       await loadData();
     } catch (err) {
@@ -307,12 +271,12 @@ export default function MeetingRoomsPage() {
         rel="stylesheet"
       />
 
-      <div className="relative w-full text-on-surface">
+      <main className="min-h-screen bg-slate-50 text-slate-950 font-sans p-6 lg:p-10 relative overflow-x-hidden">
         {/* 뒷배경 AI 스파클 그라데이션 장식 */}
         <div className="fixed top-0 right-0 w-[50vw] h-[50vw] -mr-32 -mt-32 bg-primary/5 rounded-full blur-[140px] -z-10"></div>
         <div className="fixed bottom-0 left-0 w-[40vw] h-[40vw] -ml-32 -mb-32 bg-secondary-container/20 rounded-full blur-[120px] -z-10"></div>
 
-        <div className="w-full space-y-8">
+        <div className="max-w-7xl mx-auto space-y-8">
           {/* 에러 및 성공 알림 */}
           {error && (
             <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 flex justify-between items-center animate-in fade-in">
@@ -355,19 +319,6 @@ export default function MeetingRoomsPage() {
                 >
                   <span className="material-symbols-outlined text-sm block">chevron_left</span>
                 </button>
-                <div className="flex items-center border-r border-slate-200 pr-1 mr-1">
-                  <span className="material-symbols-outlined text-slate-400 text-sm pl-2 pointer-events-none">calendar_month</span>
-                  <input
-                    type="date"
-                    value={formatDateString(currentWeekBase)}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setCurrentWeekBase(new Date(e.target.value));
-                      }
-                    }}
-                    className="bg-transparent border-0 px-2 py-1 text-xs font-semibold text-slate-700 outline-none w-28 focus:ring-0 cursor-pointer"
-                  />
-                </div>
                 <button
                   onClick={handleToday}
                   className="px-4 py-1.5 hover:bg-slate-100 text-xs font-semibold rounded-lg text-slate-700 transition-colors"
@@ -644,7 +595,7 @@ export default function MeetingRoomsPage() {
 
           </div>
         </div>
-      </div>
+      </main>
 
       {/* 공간 예약 모달 오버레이 */}
       {isModalOpen && (
@@ -695,118 +646,57 @@ export default function MeetingRoomsPage() {
                     />
                   </div>
 
-                  {/* 회의실 입력 (텍스트로 직접 작성) */}
+                  {/* 팀 규모 */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 px-1">회의실 이름</label>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 px-1">참석 인원 수</label>
                     <input
-                      type="text"
-                      required
-                      value={modalRoomName}
-                      onChange={(e) => setModalRoomName(e.target.value)}
-                      placeholder="예: 제1회의실, Alpha룸 등"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm text-slate-800 placeholder:text-slate-400 transition-all"
+                      type="number"
+                      min="1"
+                      value={modalTeamSize}
+                      onChange={(e) => setModalTeamSize(e.target.value)}
+                      placeholder="인원 수 입력"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:ring-4 focus:ring-primary/10 outline-none text-sm text-slate-700 transition-all"
                     />
                   </div>
                 </div>
 
-                {/* 참석자 선택 (조직도 연동 및 검색) */}
-                <div>
-                  <div className="flex justify-between items-center mb-1.5 px-1">
-                    <label className="block text-xs font-semibold text-slate-500">참석자 선택</label>
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                      선택됨: {selectedUserIds.length}명
-                    </span>
-                  </div>
-                  
-                  {/* 검색 필드 */}
-                  <div className="relative mb-2">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
-                      search
-                    </span>
-                    <input
-                      type="text"
-                      placeholder="참석자 이름 또는 이메일 검색..."
-                      value={memberSearch}
-                      onChange={(e) => setMemberSearch(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-slate-50/30 focus:ring-4 focus:ring-primary/5 outline-none text-xs text-slate-800"
-                    />
-                  </div>
-
-                  {/* 멤버 목록 스크롤러 */}
-                  <div className="border border-slate-200 rounded-xl max-h-40 overflow-y-auto divide-y divide-slate-100 bg-slate-50/50 p-2 custom-scrollbar">
-                    {orgMembers
-                      .filter((member) => {
-                        const name = member.user?.name || "";
-                        const email = member.user?.email || "";
-                        return (
-                          name.toLowerCase().includes(memberSearch.toLowerCase()) ||
-                          email.toLowerCase().includes(memberSearch.toLowerCase())
-                        );
-                      })
-                      .map((member) => {
-                        const uId = member.user_id || member.user?.id;
-                        if (!uId) return null;
-                        const isChecked = selectedUserIds.includes(uId);
-
-                        return (
-                          <label
-                            key={member.id}
-                            className="flex items-center gap-3 p-2 hover:bg-white rounded-lg cursor-pointer transition-all"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedUserIds([...selectedUserIds, uId]);
-                                } else {
-                                  setSelectedUserIds(selectedUserIds.filter((id) => id !== uId));
-                                }
-                              }}
-                              className="rounded border-slate-350 text-primary focus:ring-primary h-4 w-4"
-                            />
-                            <div className="flex-grow text-xs flex items-center justify-between">
-                              <div>
-                                <span className="font-semibold text-slate-800">{member.user?.name || "이름 없음"}</span>
-                                <span className="text-slate-450 ml-1.5">({member.user?.email || ""})</span>
-                              </div>
-                              {member.department?.name && (
-                                <span className="text-[9px] bg-slate-205 text-slate-600 px-1.5 py-0.5 rounded font-medium">
-                                  {member.department.name}
-                                </span>
-                              )}
-                            </div>
-                          </label>
-                        );
-                      })}
-                    {orgMembers.length === 0 && (
-                      <p className="text-center text-xs text-slate-400 py-4">불러온 조직원 정보가 없습니다.</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* AI 추천 박스 (선택된 인원 수에 따라 나타남) */}
+                {/* AI 추천 박스 (인원 수에 따라 나타남) */}
                 {aiSuggestion && (
                   <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start gap-3 transition-all duration-300 animate-in fade-in slide-in-from-top-2">
                     <span className="material-symbols-outlined text-primary text-lg mt-0.5">auto_awesome</span>
                     <div className="flex-1">
-                      <p className="text-xs font-bold text-primary mb-0.5">AI 공간 제안</p>
+                      <p className="text-xs font-bold text-primary mb-0.5">AI 회의실 제안</p>
                       <p className="text-[11px] text-slate-600 leading-relaxed">{aiSuggestion}</p>
                       {aiSuggestedRoomId && (
                         <button
                           type="button"
-                          onClick={() => {
-                            const recRoom = rooms.find((r) => r.id === aiSuggestedRoomId);
-                            if (recRoom) setModalRoomName(recRoom.name);
-                          }}
+                          onClick={() => setModalRoomId(aiSuggestedRoomId)}
                           className="mt-2 text-[10px] font-bold bg-primary text-white px-3 py-1 rounded-lg hover:opacity-90 active:scale-95 transition-all"
                         >
-                          제안 공간 이름 입력
+                          해당 회의실 바로 선택
                         </button>
                       )}
                     </div>
                   </div>
                 )}
+
+                {/* 회의실 선택 */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 px-1">회의실 선택</label>
+                  <select
+                    required
+                    value={modalRoomId}
+                    onChange={(e) => setModalRoomId(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:ring-4 focus:ring-primary/10 outline-none text-sm text-slate-700 transition-all"
+                  >
+                    <option value="" disabled>사용하실 회의실을 선택하세요</option>
+                    {rooms.map((room) => (
+                      <option key={room.id} value={room.id}>
+                        {room.name} (수용: {room.capacity || "0"}인)
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   {/* 시작 시각 */}
