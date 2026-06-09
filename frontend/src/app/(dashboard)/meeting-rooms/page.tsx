@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, authHeaders } from "@/lib/api/client";
 import { ENDPOINTS } from "@/lib/api/endpoints";
+import { minutesApi } from "@/lib/api/minutes";
+import { createClient } from "@/lib/supabase/client";
+import type { ApiReservation, Minute } from "@/types";
+import MinuteEditor from "@/components/minutes/MinuteEditor";
+import MinuteViewer from "@/components/minutes/MinuteViewer";
 
 type MeetingRoom = {
   id: string;
@@ -56,12 +61,23 @@ function formatDateString(d: Date): string {
 export default function MeetingRoomsPage() {
   const [accessToken] = useState(() => getStored("meetinghubAccessToken"));
   const [companyId] = useState(() => getStored("meetinghubCompanyId"));
+  const [currentUserId, setCurrentUserId] = useState("");
+
+  // 회의록 모달 상태
+  const [minuteModal, setMinuteModal] = useState<{
+    open: boolean;
+    reservation: ApiReservation | null;
+    minute: Minute | null;
+    loading: boolean;
+    error: string;
+  }>({ open: false, reservation: null, minute: null, loading: false, error: "" });
 
   const [rooms, setRooms] = useState<MeetingRoom[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 주간 캘린더 기준 날짜 (기본 오늘)
   const [currentWeekBase, setCurrentWeekBase] = useState(() => new Date());
@@ -70,7 +86,6 @@ export default function MeetingRoomsPage() {
   // 모달 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
-  const [modalRoomName, setModalRoomName] = useState("");
   const [modalDate, setModalDate] = useState(() => formatDateString(new Date()));
   const [modalStartTime, setModalStartTime] = useState("10:00");
   const [modalEndTime, setModalEndTime] = useState("11:00");
@@ -79,6 +94,10 @@ export default function MeetingRoomsPage() {
   const [orgMembers, setOrgMembers] = useState<any[]>([]);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
+
+  // 회의실 선택 상태 ("new" 이면 신규 생성)
+  const [modalRoomId, setModalRoomId] = useState<string>("");
+  const [modalNewRoomName, setModalNewRoomName] = useState("");
 
   // AI 추천 문구
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
@@ -122,6 +141,15 @@ export default function MeetingRoomsPage() {
     void loadData();
   }, [loadData]);
 
+  // 현재 로그인 사용자 id — 회의록 작성자 본인 판별(수정/삭제 버튼)에 사용
+  useEffect(() => {
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => setCurrentUserId(data.user?.id ?? ""))
+      .catch(() => setCurrentUserId(""));
+  }, []);
+
+
   // AI 회의실 추천 반응 로직 (참석 인원 수 기반)
   useEffect(() => {
     const size = selectedUserIds.length;
@@ -150,65 +178,63 @@ export default function MeetingRoomsPage() {
   // 예약 신청
   const handleCreateReservation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!accessToken || !companyId) return;
-    if (!modalTitle || !modalRoomName || !modalDate || !modalStartTime || !modalEndTime) {
+
+    if (!accessToken || !companyId) {
+      setError("로그인 정보 또는 회사 ID가 없습니다. 다시 로그인해 주세요.");
+      return;
+    }
+
+    const isNewRoom = modalRoomId === "new";
+    if (!modalTitle || !modalRoomId || !modalDate || !modalStartTime || !modalEndTime) {
       setError("필수 입력 필드를 모두 작성해 주세요.");
+      return;
+    }
+    if (isNewRoom && !modalNewRoomName.trim()) {
+      setError("새 회의실 이름을 입력해 주세요.");
+      return;
+    }
+    if (modalStartTime >= modalEndTime) {
+      setError("시작 시각은 종료 시각보다 빨라야 합니다.");
       return;
     }
 
     setError("");
     setSuccessMsg("");
+    setIsSubmitting(true);
 
-    // ISO 8601 시간대 변환 (예: 2026-06-09T10:00:00+09:00)
     const start_at = `${modalDate}T${modalStartTime}:00+09:00`;
-    const end_at = `${modalDate}T${modalEndTime}:00+09:00`;
+    const end_at   = `${modalDate}T${modalEndTime}:00+09:00`;
 
     try {
-      // 1. 회의실 이름으로 기존 회의실 검사 또는 생성
-      let roomId = "";
-      const existingRoom = rooms.find(
-        (r) => r.name.trim().toLowerCase() === modalRoomName.trim().toLowerCase()
-      );
+      let roomId = modalRoomId;
 
-      if (existingRoom) {
-        roomId = existingRoom.id;
-      } else {
-        // 새 회의실 생성
+      if (isNewRoom) {
         const newRoom = await api.post<MeetingRoom>(
           ENDPOINTS.MEETING_ROOMS,
-          { name: modalRoomName.trim() },
+          { name: modalNewRoomName.trim() },
           { headers: authHeaders(accessToken, companyId) }
         );
         roomId = newRoom.id;
       }
 
-      // 2. 예약 생성
       await api.post<Reservation>(
         ENDPOINTS.RESERVATIONS,
-        {
-          room_id: roomId,
-          title: modalTitle,
-          start_at,
-          end_at,
-          user_ids: selectedUserIds,
-        },
-        {
-          headers: authHeaders(accessToken, companyId),
-        }
+        { room_id: roomId, title: modalTitle, start_at, end_at, user_ids: selectedUserIds },
+        { headers: authHeaders(accessToken, companyId) }
       );
+
       setSuccessMsg("예약이 성공적으로 확정되었습니다!");
       setIsModalOpen(false);
-      
-      // 모달 폼 초기화
       setModalTitle("");
-      setModalRoomName("");
+      setModalRoomId("");
+      setModalNewRoomName("");
       setSelectedUserIds([]);
       setMemberSearch("");
-
-      // 다시 읽어오기
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "예약 생성에 실패했습니다.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -227,6 +253,23 @@ export default function MeetingRoomsPage() {
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "예약 취소에 실패했습니다.");
+    }
+  };
+
+  // 예약 블록 클릭 → 회의록 모달 열기. 기존 회의록이 있으면 조회해 viewer로, 없으면 editor로 분기.
+  const handleOpenMinuteModal = async (resId: string) => {
+    const res = reservations.find((r) => r.id === resId);
+    if (!res) return;
+    setMinuteModal({ open: true, reservation: res as unknown as ApiReservation, minute: null, loading: true, error: "" });
+    try {
+      const minute = await minutesApi.getByReservation(resId, accessToken, companyId);
+      setMinuteModal((prev) => (prev.open ? { ...prev, minute, loading: false } : prev));
+    } catch (e) {
+      setMinuteModal((prev) =>
+        prev.open
+          ? { ...prev, loading: false, error: e instanceof Error ? e.message : "회의록을 불러오지 못했습니다." }
+          : prev,
+      );
     }
   };
 
@@ -384,7 +427,7 @@ export default function MeetingRoomsPage() {
               </div>
 
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => { setIsModalOpen(true); setModalRoomId(""); setModalNewRoomName(""); setError(""); }}
                 className="flex items-center justify-center gap-2 bg-primary text-white px-5 py-3 rounded-xl font-semibold text-sm hover:opacity-90 active:scale-95 shadow-md shadow-primary/20 transition-all cursor-pointer ml-auto md:ml-0"
               >
                 <span className="material-symbols-outlined text-sm">add_circle</span>
@@ -482,9 +525,9 @@ export default function MeetingRoomsPage() {
                           <div
                             key={res.id}
                             style={style}
-                            onClick={() => handleCancelReservation(res.id)}
+                            onClick={() => void handleOpenMinuteModal(res.id)}
                             className={`absolute left-1 right-1 border-l-4 rounded-xl px-2 py-1.5 cursor-pointer hover:scale-[1.02] hover:shadow-sm transition-all overflow-hidden flex flex-col justify-between group ${blockBg}`}
-                            title="클릭하여 예약을 취소합니다"
+                            title="클릭하여 회의록 작성"
                           >
                             <div>
                               <p className="font-bold text-[11px] leading-tight truncate">
@@ -494,9 +537,16 @@ export default function MeetingRoomsPage() {
                                 {room?.name ?? "회의실"} • {timeRangeStr}
                               </p>
                             </div>
-                            <span className="material-symbols-outlined text-[10px] text-red-500 absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                void handleCancelReservation(res.id);
+                              }}
+                              className="material-symbols-outlined text-[10px] text-red-500 absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
+                              title="예약 취소"
+                            >
                               delete
-                            </span>
+                            </button>
                           </div>
                         );
                       })}
@@ -695,17 +745,35 @@ export default function MeetingRoomsPage() {
                     />
                   </div>
 
-                  {/* 회의실 입력 (텍스트로 직접 작성) */}
+                  {/* 회의실 선택 */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 px-1">회의실 이름</label>
-                    <input
-                      type="text"
+                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 px-1">회의실</label>
+                    <select
                       required
-                      value={modalRoomName}
-                      onChange={(e) => setModalRoomName(e.target.value)}
-                      placeholder="예: 제1회의실, Alpha룸 등"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm text-slate-800 placeholder:text-slate-400 transition-all"
-                    />
+                      value={modalRoomId}
+                      onChange={(e) => {
+                        setModalRoomId(e.target.value);
+                        if (e.target.value !== "new") setModalNewRoomName("");
+                      }}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm text-slate-800 transition-all"
+                    >
+                      <option value="" disabled>회의실 선택</option>
+                      {rooms.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.name}{r.capacity ? ` (${r.capacity}인)` : ""}
+                        </option>
+                      ))}
+                      <option value="new">+ 새 회의실 추가</option>
+                    </select>
+                    {modalRoomId === "new" && (
+                      <input
+                        type="text"
+                        value={modalNewRoomName}
+                        onChange={(e) => setModalNewRoomName(e.target.value)}
+                        placeholder="새 회의실 이름 입력"
+                        className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm text-slate-800 placeholder:text-slate-400 transition-all"
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -796,12 +864,11 @@ export default function MeetingRoomsPage() {
                         <button
                           type="button"
                           onClick={() => {
-                            const recRoom = rooms.find((r) => r.id === aiSuggestedRoomId);
-                            if (recRoom) setModalRoomName(recRoom.name);
+                            if (aiSuggestedRoomId) setModalRoomId(aiSuggestedRoomId);
                           }}
                           className="mt-2 text-[10px] font-bold bg-primary text-white px-3 py-1 rounded-lg hover:opacity-90 active:scale-95 transition-all"
                         >
-                          제안 공간 이름 입력
+                          제안 공간 선택
                         </button>
                       )}
                     </div>
@@ -847,12 +914,83 @@ export default function MeetingRoomsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 font-bold text-xs bg-primary text-white rounded-xl shadow-md shadow-primary/20 hover:shadow-lg active:scale-95 transition-all cursor-pointer"
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 font-bold text-xs bg-primary text-white rounded-xl shadow-md shadow-primary/20 hover:shadow-lg active:scale-95 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  예약 확정
+                  {isSubmitting ? "처리 중..." : "예약 확정"}
                 </button>
               </div>
             </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* 회의록 모달 */}
+      {minuteModal.open && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+
+            {/* 헤더 */}
+            <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-primary text-xl">description</span>
+                회의록
+              </h2>
+              <button
+                onClick={() => setMinuteModal({ open: false, reservation: null, minute: null, loading: false, error: "" })}
+                className="material-symbols-outlined text-slate-400 hover:bg-slate-200 rounded-full p-2 transition-colors text-lg cursor-pointer"
+              >
+                close
+              </button>
+            </div>
+
+            <div className="overflow-y-auto p-8 space-y-6">
+              {minuteModal.loading && (
+                <p className="text-sm text-slate-400 text-center py-8">불러오는 중...</p>
+              )}
+              {minuteModal.error && (
+                <p className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                  {minuteModal.error}
+                </p>
+              )}
+
+              {minuteModal.reservation && (() => {
+                const res = minuteModal.reservation;
+                return (
+                  <>
+                    {/* 회의 정보 */}
+                    <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-1">
+                      <p className="font-bold text-slate-800">{res.title}</p>
+                      <p className="text-xs text-slate-500">
+                        {new Date(res.start_at).toLocaleString("ko-KR")} –{" "}
+                        {new Date(res.end_at).toLocaleString("ko-KR")}
+                      </p>
+                    </div>
+
+                    {/* 회의록 작성 / 조회 — 로딩 중에는 editor를 띄우지 않음(빈 화면·중복 저장 방지) */}
+                    {!minuteModal.loading &&
+                      (minuteModal.minute ? (
+                        <MinuteViewer
+                          minute={minuteModal.minute}
+                          currentUserId={currentUserId}
+                          token={accessToken}
+                          companyId={companyId}
+                          onUpdated={(m) => setMinuteModal((prev) => ({ ...prev, minute: m }))}
+                          onDeleted={() => setMinuteModal((prev) => ({ ...prev, minute: null }))}
+                        />
+                      ) : (
+                        <MinuteEditor
+                          reservationId={res.id}
+                          token={accessToken}
+                          companyId={companyId}
+                          onSaved={(m) => setMinuteModal((prev) => ({ ...prev, minute: m }))}
+                        />
+                      ))}
+                  </>
+                );
+              })()}
+            </div>
 
           </div>
         </div>

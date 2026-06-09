@@ -20,7 +20,8 @@ export const minutesApi = {
         { headers: authHeaders(token, companyId) },
       );
     } catch (e: unknown) {
-      if (e instanceof Error && e.message.includes("404")) return null;
+      // 회의록 미존재(404) 또는 한국어 에러 메시지 모두 null로 처리
+      if (e instanceof Error && (e.message.includes("404") || e.message.includes("없습니다"))) return null;
       throw e;
     }
   },

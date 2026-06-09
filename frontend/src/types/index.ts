@@ -107,6 +107,7 @@ export interface ApiReservation {
   end_at: string;
   status: ReservationStatus;
   organizer_id: string;
+  attendees?: Array<{ user_id: string; users?: { email: string; name: string | null } | null }>;
 }
 
 // ---- 알림 ----

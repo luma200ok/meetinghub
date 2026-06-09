@@ -33,12 +33,14 @@ class MinuteService:
             raise ApiError(400, "회의록 내용을 입력해 주세요.")
 
         company_id = self._company_id()
+        user_id = self._user_id()
+
         if not repo.reservation_belongs_to_company(reservation_id, company_id):
             raise ApiError(404, "회의 예약을 찾을 수 없습니다.")
         if repo.exists_for_reservation(reservation_id):
             raise ApiError(409, "이미 해당 회의의 회의록이 존재합니다.")
 
-        return repo.create(reservation_id, content.strip(), self._user_id(), company_id)
+        return repo.create(reservation_id, content.strip(), user_id, company_id)
 
     def get(self, minute_id: str) -> dict:
         data = repo.find_by_id(minute_id, self._company_id())
