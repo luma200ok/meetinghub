@@ -42,7 +42,7 @@ meetinghub/
 
 ### 1. 레포 클론
 ```bash
-git clone https://github.com/Human2jo/meetinghub.git
+git clone https://github.com/luma200ok/meetinghub.git
 cd meetinghub
 ```
 
