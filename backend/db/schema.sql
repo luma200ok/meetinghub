@@ -155,38 +155,53 @@ alter table ai_summaries         enable row level security;
 alter table action_items         enable row level security;
 alter table notifications        enable row level security;
 
+-- 멤버십 조회 헬퍼: SECURITY DEFINER로 RLS를 우회한다.
+-- company_members 정책이 USING 절에서 company_members를 다시 조회하면
+-- 무한재귀(ERROR 42P17 infinite recursion in policy)가 발생한다. 모든 정책의
+-- "내가 속한 회사 목록" 서브쿼리를 이 함수로 통일해 재귀 고리를 끊는다.
+-- (Supabase 권장 패턴: security definer 헬퍼로 멤버십 테이블 자기참조 회피)
+create or replace function public.user_company_ids()
+  returns setof uuid
+  language sql
+  stable
+  security definer
+  set search_path = ''
+as $$
+  select company_id from public.company_members where user_id = auth.uid()
+$$;
+
 -- 정책: company_id가 있는 테이블 — 해당 회사 멤버만 SELECT 가능
 create policy "Users can view their own company's departments"
   on departments for select
-  using (company_id in (select company_id from company_members where user_id = auth.uid()));
+  using (company_id in (select public.user_company_ids()));
 
 create policy "Users can view their own company's positions"
   on positions for select
-  using (company_id in (select company_id from company_members where user_id = auth.uid()));
+  using (company_id in (select public.user_company_ids()));
 
 create policy "Users can view their own company members"
   on company_members for select
-  using (company_id in (select company_id from company_members where user_id = auth.uid()));
+  using (company_id in (select public.user_company_ids()));
 
 create policy "Users can view their own company's meeting rooms"
   on meeting_rooms for select
-  using (company_id in (select company_id from company_members where user_id = auth.uid()));
+  using (company_id in (select public.user_company_ids()));
 
 create policy "Users can view their own company's reservations"
   on meeting_reservations for select
-  using (company_id in (select company_id from company_members where user_id = auth.uid()));
+  using (company_id in (select public.user_company_ids()));
 
 create policy "Users can view their own company's minutes"
   on meeting_minutes for select
-  using (company_id in (select company_id from company_members where user_id = auth.uid()));
+  using (company_id in (select public.user_company_ids()));
 
 create policy "Users can view their own company's action items"
   on action_items for select
-  using (company_id in (select company_id from company_members where user_id = auth.uid()));
+  using (company_id in (select public.user_company_ids()));
 
 create policy "Users can view invitations for their company"
   on invitations for select
-  using (company_id in (select company_id from company_members where user_id = auth.uid()));
+  using (company_id in (select public.user_company_ids()));
 
 -- 정책: 참석자는 자신이 속한 예약의 attendee 데이터 조회 가능
 create policy "Users can view reservations they attend"
@@ -194,7 +209,7 @@ create policy "Users can view reservations they attend"
   using (
     reservation_id in (
       select id from meeting_reservations
-      where company_id in (select company_id from company_members where user_id = auth.uid())
+      where company_id in (select public.user_company_ids())
     )
   );
 
@@ -204,7 +219,7 @@ create policy "Users can view summaries of their company's minutes"
   using (
     minute_id in (
       select id from meeting_minutes
-      where company_id in (select company_id from company_members where user_id = auth.uid())
+      where company_id in (select public.user_company_ids())
     )
   );
 
@@ -220,11 +235,11 @@ create policy "Users can view own profile or same-company users"
     id = auth.uid()
     or id in (
       select user_id from company_members
-      where company_id in (select company_id from company_members where user_id = auth.uid())
+      where company_id in (select public.user_company_ids())
     )
   );
 
 -- 정책: companies 테이블은 자신이 속한 회사만 조회
 create policy "Users can view their own companies"
   on companies for select
-  using (id in (select company_id from company_members where user_id = auth.uid()));
+  using (id in (select public.user_company_ids()));
