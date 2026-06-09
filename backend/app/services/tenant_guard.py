@@ -13,6 +13,23 @@ from flask import g
 from app.repositories.auth_repository import CompanyMemberRepository
 
 
+def _member_record(user_id: str, company_id: str) -> dict | None:
+    """company_members 조회를 요청 범위에서 1회로 캐시한다 (P3 최적화).
+
+    한 요청에서 require_member_company + member_role/is_member 가 같은 (user, company)
+    멤버십을 각각 조회하던 것(2회)을 캐시 히트로 합친다. 멤버십은 요청 중 변하지 않으므로
+    캐시는 안전하다. 캐시는 g(요청 컨텍스트) 에 저장돼 요청 종료 시 폐기된다.
+    """
+    cache = getattr(g, '_tenant_member_cache', None)
+    if cache is None:
+        cache = {}
+        g._tenant_member_cache = cache
+    key = (user_id, company_id)
+    if key not in cache:
+        cache[key] = CompanyMemberRepository().find_by_user_company(user_id, company_id)
+    return cache[key]
+
+
 def require_member_company() -> str:
     """g.user 가 g.company_id 의 구성원임을 검증하고 company_id 를 반환한다.
 
@@ -25,19 +42,20 @@ def require_member_company() -> str:
         raise ValueError('X-Company-Id 헤더가 필요합니다.')
 
     user_id = _current_user_id()
-    if CompanyMemberRepository().find_by_user_company(user_id, company_id) is None:
+    if _member_record(user_id, company_id) is None:
         raise PermissionError('해당 회사의 구성원이 아닙니다.')
     return company_id
 
 
 def member_role(user_id: str, company_id: str) -> str | None:
     """user 의 해당 company 내 역할(ADMIN/MEMBER). 비구성원이면 None."""
-    return CompanyMemberRepository().role_for(user_id, company_id)
+    record = _member_record(user_id, company_id)
+    return record.get('role') if record else None
 
 
 def is_member(user_id: str, company_id: str) -> bool:
     """user 가 company 의 구성원인지 여부."""
-    return CompanyMemberRepository().find_by_user_company(user_id, company_id) is not None
+    return _member_record(user_id, company_id) is not None
 
 
 def _current_user_id() -> str:

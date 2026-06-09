@@ -1,5 +1,6 @@
-import Sidebar from "@/components/layout/Sidebar";
-import Header from "@/components/layout/Header";
+import Link from "next/link";
+import NotificationBell from "@/components/notifications/NotificationBell";
+import DashboardNav from "@/components/layout/DashboardNav";
 
 export default function DashboardLayout({
   children,
@@ -7,22 +8,28 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background text-on-surface h-screen overflow-hidden flex">
-      {/* Sidebar Nav */}
-      <Sidebar />
+    <div className="min-h-screen bg-surface text-on-surface">
+      <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-outline-variant bg-surface/95 px-4 py-2.5 backdrop-blur md:px-6">
+        <Link href="/dashboard" className="flex shrink-0 items-center gap-2">
+          <span
+            className="material-symbols-outlined text-2xl text-primary"
+            style={{ fontVariationSettings: "'FILL' 1" }}
+          >
+            meeting_room
+          </span>
+          <span className="hidden text-lg font-black tracking-tight text-primary sm:inline">
+            MeetingHub
+          </span>
+        </Link>
 
-      {/* Content wrapper */}
-      <div className="flex-grow flex flex-col min-w-0 relative h-full ml-64">
-        {/* Top Header */}
-        <Header />
+        <DashboardNav />
 
-        {/* Main Content Canvas with independent scroll to prevent layout break */}
-        <main className="pt-24 px-12 pb-12 flex-grow overflow-y-auto bg-[#f9f9ff]">
-          <div className="max-w-[1440px] mx-auto w-full">
-            {children}
-          </div>
-        </main>
-      </div>
+        <div className="shrink-0">
+          <NotificationBell />
+        </div>
+      </header>
+
+      <main>{children}</main>
     </div>
   );
 }

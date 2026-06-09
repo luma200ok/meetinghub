@@ -4,6 +4,8 @@ from app.utils.supabase import get_supabase
 
 class ActionItemRepository(BaseRepository):
     table_name = 'action_items'
+    # select('*') 대신 명시 컬럼 (P3) — 스키마 변경 시 영향 범위 명확화 + 불필요 전송 방지
+    _COLUMNS = 'id, company_id, minute_id, assignee_id, task, due_date, status, created_at'
 
     def list_in_company(
         self,
@@ -13,7 +15,7 @@ class ActionItemRepository(BaseRepository):
         limit: int | None = None,
         offset: int | None = None,
     ) -> list[dict]:
-        query = self.table.select('*').eq('company_id', company_id)
+        query = self.table.select(self._COLUMNS).eq('company_id', company_id)
         if status:
             query = query.eq('status', status)
         if assignee_id:
@@ -27,7 +29,7 @@ class ActionItemRepository(BaseRepository):
 
     def find_in_company(self, task_id: str, company_id: str) -> dict | None:
         rows = (
-            self.table.select('*')
+            self.table.select(self._COLUMNS)
             .eq('id', task_id)
             .eq('company_id', company_id)
             .limit(1)

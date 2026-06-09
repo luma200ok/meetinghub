@@ -1,4 +1,4 @@
-from flask import g, abort
+from flask import g
 from app.utils.supabase import get_supabase
 
 
@@ -9,14 +9,14 @@ class NotificationService:
     def _get_current_user_id(self) -> str:
         # g.user가 없으면 인증되지 않은 요청이므로 401 에러 반환
         if not hasattr(g, "user") or g.user is None:
-            abort(401, description="로그인 사용자 정보를 찾을 수 없습니다.")
+            raise PermissionError("로그인 사용자 정보를 찾을 수 없습니다.")
 
         # g.user 객체에서 id 값을 안전하게 가져옴
         user_id = getattr(g.user, "id", None)
 
-        # user_id가 없으면 알림 조회/읽음 처리를 할 수 없으므로 401 에러 반환
+        # user_id가 없으면 알림 조회/읽음 처리를 할 수 없으므로 403 에러 반환
         if not user_id:
-            abort(401, description="user_id를 찾을 수 없습니다.")
+            raise PermissionError("user_id를 찾을 수 없습니다.")
 
         return user_id
 
