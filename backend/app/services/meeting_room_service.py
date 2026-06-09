@@ -1,6 +1,7 @@
 """담당: 김승현 — 회의실 관리"""
 from app.repositories.meeting_room_repository import MeetingRoomRepository
 from app.errors import ApiError
+from app.services.tenant_guard import require_member_company
 
 
 class MeetingRoomService:
@@ -8,18 +9,16 @@ class MeetingRoomService:
         self.repo = MeetingRoomRepository()
 
     def list(self, company_id=None) -> list[dict]:
-        if not company_id:
-            raise ApiError(400, "기업 식별자(company_id)가 필요합니다.")
+        company_id = require_member_company()
         return self.repo.find_all(company_id)
 
     def create(self, data: dict) -> dict:
+        company_id = require_member_company()
         if not data.get('name'):
             raise ApiError(400, "회의실 이름(name)은 필수입니다.")
-        if not data.get('company_id'):
-            raise ApiError(400, "기업 식별자(company_id)가 누락되었습니다.")
         
         insert_data = {
-            'company_id': data['company_id'],
+            'company_id': company_id,
             'name': data['name'],
             'location': data.get('location'),
             'capacity': data.get('capacity')
@@ -30,6 +29,7 @@ class MeetingRoomService:
         return row
 
     def update(self, room_id: str, company_id: str, data: dict) -> dict:
+        company_id = require_member_company()
         # 수정 가능한 필드 제한
         update_data = {}
         if 'name' in data:
@@ -55,6 +55,7 @@ class MeetingRoomService:
         return updated_row
 
     def delete(self, room_id: str, company_id: str) -> None:
+        company_id = require_member_company()
         # 해당 회의실이 소속 회사 자원인지 확인
         room = self.repo.find_in_company(room_id, company_id)
         if not room:
@@ -63,4 +64,5 @@ class MeetingRoomService:
         deleted = self.repo.delete_in_company(room_id, company_id)
         if not deleted:
             raise ApiError(404, "회의실 삭제에 실패했습니다.")
+
 
