@@ -12,6 +12,7 @@ from typing import Optional
 from flask import g
 
 from app.errors import ApiError
+from app.services.tenant_guard import require_member_company
 from app.utils.supabase import get_supabase
 
 # ── OpenAI 클라이언트 초기화 ──────────────────────────────────────────────────
@@ -94,10 +95,10 @@ class AiService:
         # GPT 호출
         prompt = self._build_action_items_prompt(content)
         raw = self._call_gpt(prompt)
-        items_raw = self._parse_json_response(raw, minute_id, "action_items")
-
-        if not isinstance(items_raw, list):
-            raise ApiError(502, "AI 응답 형식이 올바르지 않습니다.")
+        parsed = self._parse_json_response(raw, minute_id, "action_items")
+        # 프롬프트가 {"items":[...]} 형식을 요구하므로 응답은 dict 다. 기존엔 isinstance(list)
+        # 체크로 항상 502 가 떴음 → items 키를 추출하는 헬퍼로 리스트를 얻는다.
+        items_raw = self._parse_action_items_raw(parsed)
 
         sb = get_supabase()
 
@@ -126,8 +127,24 @@ class AiService:
         return rows
 
     def get_summary(self, minute_id: str) -> Optional[dict]:
-        """ai_summaries 단건 조회. 없으면 None 반환."""
+        """ai_summaries 단건 조회. 없으면 None 반환.
+
+        ai_summaries 에는 company_id 컬럼이 없어 minute_id 만으로 조회하면 타 회사
+        AI 요약이 노출되는 IDOR 가 된다. 요청자가 해당 회의록 소속 회사의 구성원인지
+        먼저 검증하고, 아니면(또는 회의록이 타 회사면) 없는 것으로 취급해 정보 노출을 막는다.
+        """
+        company_id = require_member_company()
         sb = get_supabase()
+        minute = (
+            sb.table("meeting_minutes")
+            .select("company_id")
+            .eq("id", minute_id)
+            .maybe_single()
+            .execute()
+            .data
+        )
+        if minute is None or minute.get("company_id") != company_id:
+            return None
         result = (
             sb.table("ai_summaries")
             .select("*")
@@ -232,10 +249,9 @@ class AiService:
         ]
 
     def _company_id(self) -> str:
-        company_id = getattr(g, "company_id", None)
-        if not company_id:
-            raise ApiError(400, "X-Company-Id 헤더가 필요합니다.")
-        return company_id
+        # 헤더(X-Company-Id)만 신뢰하면 cross-tenant IDOR(타 회사 회의록 분석/요약/액션아이템
+        # 열람·수정·삭제)이 가능하므로, #49 표준대로 멤버십까지 교차검증한다.
+        return require_member_company()
 
     def _parse_action_items_raw(self, raw_parsed) -> list[dict]:
         """action_items 파싱: items 키 또는 리스트 직접."""

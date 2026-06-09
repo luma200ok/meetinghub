@@ -6,6 +6,7 @@ Action Item 비즈니스 로직.
 from flask import g
 
 from app.repositories.action_item_repository import ActionItemRepository
+from app.services.tenant_guard import require_member_company
 from app.errors import ApiError
 
 repo = ActionItemRepository()
@@ -101,10 +102,9 @@ class ActionItemService:
     # ── 내부 헬퍼 ─────────────────────────────────────────────────────────────
 
     def _company_id(self) -> str:
-        company_id = getattr(g, "company_id", None)
-        if not company_id:
-            raise ApiError(400, "X-Company-Id 헤더가 필요합니다.")
-        return company_id
+        # 헤더만 신뢰하면 list/create/update/delete 전 경로에서 cross-tenant IDOR 가 된다.
+        # #49 표준대로 멤버십까지 교차검증한다.
+        return require_member_company()
 
     def _user_id(self) -> str:
         user = getattr(g, "user", None)
