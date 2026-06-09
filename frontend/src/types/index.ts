@@ -88,7 +88,7 @@ export interface Minute {
   created_by: string;
   author_name: string | null;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
   reservation?: {
     id: string;
     title: string;
@@ -108,6 +108,32 @@ export interface ApiReservation {
   status: ReservationStatus;
   organizer_id: string;
   attendees?: Array<{ user_id: string; users?: { email: string; name: string | null } | null }>;
+}
+
+// ---- AI 분석 결과 API 응답 (snake_case) ----
+export interface ApiAiSummary {
+  id: string;
+  minute_id: string;
+  summary: string;
+  key_points: string[];
+  decisions: string[];
+  risks: string[];
+  created_at: string;
+}
+
+// ---- Action Item API 응답 (snake_case) ----
+export type ActionItemStatus = 'TODO' | 'IN_PROGRESS' | 'DONE' | 'BLOCKED';
+
+export interface ApiActionItem {
+  id: string;
+  minute_id: string;
+  company_id: string;
+  task: string;
+  assignee_id: string | null;
+  assignee_name: string | null;
+  due_date: string | null;
+  status: ActionItemStatus;
+  created_at: string;
 }
 
 // ---- 알림 ----

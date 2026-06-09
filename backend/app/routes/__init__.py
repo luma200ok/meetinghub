@@ -11,6 +11,7 @@ from app.routes.tasks import tasks_bp
 from app.routes.notifications import notifications_bp
 from app.routes.dashboard import dashboard_bp
 from app.routes.search import search_bp
+from app.routes.action_items import action_items_bp
 
 
 def register_blueprints(app: Flask) -> None:
@@ -25,3 +26,4 @@ def register_blueprints(app: Flask) -> None:
     app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
     app.register_blueprint(dashboard_bp,    url_prefix='/api/dashboard')
     app.register_blueprint(search_bp,       url_prefix='/api/search')
+    app.register_blueprint(action_items_bp, url_prefix='/api/action-items')
