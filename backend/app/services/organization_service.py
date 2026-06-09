@@ -7,6 +7,7 @@ from app.repositories.organization_repository import (
     OrganizationMemberRepository,
     PositionRepository,
 )
+from app.services.tenant_guard import require_member_company
 
 
 class OrganizationService:
@@ -55,10 +56,10 @@ class OrganizationService:
         return self.members.list_members(self._company_id())
 
     def _company_id(self) -> str:
-        company_id = getattr(g, 'company_id', None)
-        if not company_id:
-            raise ValueError('X-Company-Id 헤더가 필요합니다.')
-        return company_id
+        # 멤버십 검증 일원화(cross-tenant IDOR 차단): 헤더 회사의 실제 구성원인지 확인한다.
+        # require_member_company() 는 헤더없음 → ValueError(400), 비구성원/미인증 →
+        # PermissionError(403) 를 던지며, 요청 범위 캐시로 중복 조회를 1회로 합친다.
+        return require_member_company()
 
     def _user_id(self) -> str:
         user_id = getattr(getattr(g, 'user', None), 'id', None)
@@ -67,9 +68,8 @@ class OrganizationService:
         return user_id
 
     def _require_member(self) -> None:
-        member = CompanyMemberRepository().find_by_user_company(self._user_id(), self._company_id())
-        if not member:
-            raise PermissionError('해당 회사의 멤버만 조회할 수 있습니다.')
+        # _company_id() 가 멤버십을 검증하므로 호출만으로 비구성원이 차단된다.
+        self._company_id()
 
     def _require_admin(self) -> None:
         role = CompanyMemberRepository().role_for(self._user_id(), self._company_id())
