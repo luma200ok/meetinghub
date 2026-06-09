@@ -15,9 +15,25 @@ class UserRepository(BaseRepository):
         if name:
             payload['name'] = name
 
-        response = self.table.upsert(payload, on_conflict='id').execute()
-        rows = response.data or []
-        return rows[0] if rows else payload
+        try:
+            response = self.table.upsert(payload, on_conflict='id').execute()
+            rows = response.data or []
+            return rows[0] if rows else payload
+        except Exception:
+            # email UNIQUE 제약 위반 시 — 이미 같은 id로 등록된 프로필이 있으면 업데이트만 시도
+            existing = self.find_by_id(user_id)
+            if existing:
+                update_data = {}
+                if name:
+                    update_data['name'] = name
+                if update_data:
+                    return self.update(user_id, update_data)
+                return existing
+            # 같은 email을 가진 다른 사용자가 이미 있는 경우 — 기존 프로필 반환
+            existing_by_email = self.find_by_email(email)
+            if existing_by_email:
+                return existing_by_email
+            raise
 
 
 class InvitationRepository(BaseRepository):

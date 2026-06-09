@@ -20,7 +20,10 @@ function resolveApiBaseUrl(): string {
 const BASE_URL = resolveApiBaseUrl();
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  const baseUrlWithSlash = BASE_URL.endsWith('/') ? BASE_URL : `${BASE_URL}/`;
+  const url = `${baseUrlWithSlash}${cleanPath}`;
+  const res = await fetch(url, {
     headers: { 'Content-Type': 'application/json', ...init?.headers },
     ...init,
   });
