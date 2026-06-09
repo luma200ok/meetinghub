@@ -11,9 +11,9 @@
 ## 인프라
 | 영역 | 상태 |
 |------|------|
-| 프론트 (Next.js) | Netlify — 배포 파이프라인 복구 (레포 Public 전환으로 기여자 제한 해소). `npm run build` PASS (14 라우트) |
-| 백엔드 (Flask) | Render — `backend/render.yaml` 설정 완료. pytest 54/54 PASS |
-| DB / Auth | Supabase Cloud (PostgreSQL) — 전 테이블 RLS 활성화 |
+| 프론트 (Next.js) | Netlify(`meeting-hub-ai`) — `netlify.toml`에 공개 `NEXT_PUBLIC_*`(Supabase URL/키, API URL) 고정(#25). `npm run build` PASS |
+| 백엔드 (Flask) | Render(`meetinghub-api`) — `render.yaml`에 SUPABASE_URL·CORS 고정, 시크릿 3개만 대시보드. Python 3.11.9 고정(#23). pytest PASS |
+| DB / Auth | Supabase Cloud `toptwnqbqrqefhlbeelb` (ap-southeast-1) — 전 테이블 RLS 활성화 |
 | AI | OpenAI GPT-4o |
 
 ---
@@ -37,13 +37,15 @@
 ---
 
 ## 마지막 머지 PR
-- 최신: **#7** 로그인/회원가입 흐름 개편 + 소셜 로그인 + signup 세션오염 버그 수정 (`38d22ab`)
-- 직전: #17 회의실·예약 308 픽스 / #16 docs 안정화 / #13 회의실 예약·중복검증 / #8 회의록
+- 최신: **#22** Render 배포용 Python 3.11.9 고정 (`de363a6`, #23 종료)
+- 직전: #7 로그인/회원가입+소셜 / #17 회의실·예약 308 픽스 / #13 회의실 예약 / #8 회의록
 
 ## 열린 PR
 | PR | 제목 | 담당 | 상태 |
 |----|------|------|------|
-| (없음) | — | — | — |
+| #25 | 배포 환경변수 연동(netlify.toml/render.yaml 공개값 고정) | 메타 | 🔄 진행 |
+| #21 | NEXT_PUBLIC_API_URL 미설정 시 프로덕션 빌드 실패 가드 | 이은석 | 🔄 (#25와 함께 머지 예정) |
+| #19 | Feature/namheo minutes | 허남 | 🔄 |
 
 ---
 
