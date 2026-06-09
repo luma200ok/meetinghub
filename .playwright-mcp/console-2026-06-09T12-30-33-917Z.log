@@ -1,0 +1,2 @@
+[     871ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ https://meeting-hub-ai.netlify.app/signup:0
+[  110266ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://meetinghub-ai.onrender.com/api/companies:0

@@ -1,0 +1,24 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - img "Welcome Workspace" [ref=e7]
+        - generic [ref=e9]:
+          - heading "환영합니다! 새로운 시작을 준비하세요." [level=1] [ref=e10]:
+            - text: 환영합니다!
+            - text: 새로운 시작을 준비하세요.
+          - paragraph [ref=e11]: Nexus AI의 모든 기능을 경험하기 위해 새로운 기업을 생성하거나, 기존 팀에 참여해 보세요.
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - heading "새 기업 생성" [level=3] [ref=e37]
+          - button "close" [ref=e38] [cursor=pointer]:
+            - generic [ref=e39]: close
+        - generic [ref=e40]:
+          - generic [ref=e41]:
+            - generic [ref=e42]: 기업 이름
+            - 'textbox "예: (주)넥서스AI" [ref=e43]'
+          - button "기업 생성 완료" [ref=e44] [cursor=pointer]
+    - generic [ref=e32]:
+      - generic [ref=e33]: help
+      - text: 도움이 필요하신가요? 고객지원 센터에 문의하세요.
+  - alert [ref=e34]
