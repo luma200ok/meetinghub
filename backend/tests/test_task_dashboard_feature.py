@@ -262,6 +262,24 @@ class TaskFeatureTest(unittest.TestCase):
                 TaskService().create({'task': '회의 준비', 'assignee_id': 'outsider'})
         repo_cls.return_value.create.assert_not_called()
 
+    @patch('app.services.task_service.ActionItemRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_create_rejects_too_long_task(self, member_cls, repo_cls):
+        _member(member_cls)
+        with self._ctx():
+            with self.assertRaises(ValueError):
+                TaskService().create({'task': 'x' * 501})
+        repo_cls.return_value.create.assert_not_called()
+
+    @patch('app.services.task_service.ActionItemRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_create_rejects_invalid_due_date(self, member_cls, repo_cls):
+        _member(member_cls)
+        with self._ctx():
+            with self.assertRaises(ValueError):
+                TaskService().create({'task': '문서화', 'due_date': 'not-a-date'})
+        repo_cls.return_value.create.assert_not_called()
+
 
 class SearchFeatureTest(unittest.TestCase):
     def setUp(self):
