@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, authHeaders } from "@/lib/api/client";
 import { ENDPOINTS } from "@/lib/api/endpoints";
+import { minutesApi } from "@/lib/api/minutes";
+import { createClient } from "@/lib/supabase/client";
 import type { ApiReservation, Minute } from "@/types";
 import MinuteEditor from "@/components/minutes/MinuteEditor";
 import MinuteViewer from "@/components/minutes/MinuteViewer";
@@ -59,7 +61,7 @@ function formatDateString(d: Date): string {
 export default function MeetingRoomsPage() {
   const [accessToken] = useState(() => getStored("meetinghubAccessToken"));
   const [companyId] = useState(() => getStored("meetinghubCompanyId"));
-  const [currentUserId] = useState("");
+  const [currentUserId, setCurrentUserId] = useState("");
 
   // 회의록 모달 상태
   const [minuteModal, setMinuteModal] = useState<{
@@ -138,6 +140,14 @@ export default function MeetingRoomsPage() {
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  // 현재 로그인 사용자 id — 회의록 작성자 본인 판별(수정/삭제 버튼)에 사용
+  useEffect(() => {
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => setCurrentUserId(data.user?.id ?? ""))
+      .catch(() => setCurrentUserId(""));
+  }, []);
 
 
   // AI 회의실 추천 반응 로직 (참석 인원 수 기반)
@@ -246,11 +256,21 @@ export default function MeetingRoomsPage() {
     }
   };
 
-  // 예약 블록 클릭 → 회의록 모달 열기 (이미 로드된 reservations 사용)
-  const handleOpenMinuteModal = (resId: string) => {
+  // 예약 블록 클릭 → 회의록 모달 열기. 기존 회의록이 있으면 조회해 viewer로, 없으면 editor로 분기.
+  const handleOpenMinuteModal = async (resId: string) => {
     const res = reservations.find((r) => r.id === resId);
     if (!res) return;
-    setMinuteModal({ open: true, reservation: res as unknown as ApiReservation, minute: null, loading: false, error: "" });
+    setMinuteModal({ open: true, reservation: res as unknown as ApiReservation, minute: null, loading: true, error: "" });
+    try {
+      const minute = await minutesApi.getByReservation(resId, accessToken, companyId);
+      setMinuteModal((prev) => (prev.open ? { ...prev, minute, loading: false } : prev));
+    } catch (e) {
+      setMinuteModal((prev) =>
+        prev.open
+          ? { ...prev, loading: false, error: e instanceof Error ? e.message : "회의록을 불러오지 못했습니다." }
+          : prev,
+      );
+    }
   };
 
   // 주 이동
@@ -948,24 +968,25 @@ export default function MeetingRoomsPage() {
                       </p>
                     </div>
 
-                    {/* 회의록 작성 / 조회 */}
-                    {minuteModal.minute ? (
-                      <MinuteViewer
-                        minute={minuteModal.minute}
-                        currentUserId={currentUserId}
-                        token={accessToken}
-                        companyId={companyId}
-                        onUpdated={(m) => setMinuteModal((prev) => ({ ...prev, minute: m }))}
-                        onDeleted={() => setMinuteModal((prev) => ({ ...prev, minute: null }))}
-                      />
-                    ) : (
-                      <MinuteEditor
-                        reservationId={res.id}
-                        token={accessToken}
-                        companyId={companyId}
-                        onSaved={(m) => setMinuteModal((prev) => ({ ...prev, minute: m }))}
-                      />
-                    )}
+                    {/* 회의록 작성 / 조회 — 로딩 중에는 editor를 띄우지 않음(빈 화면·중복 저장 방지) */}
+                    {!minuteModal.loading &&
+                      (minuteModal.minute ? (
+                        <MinuteViewer
+                          minute={minuteModal.minute}
+                          currentUserId={currentUserId}
+                          token={accessToken}
+                          companyId={companyId}
+                          onUpdated={(m) => setMinuteModal((prev) => ({ ...prev, minute: m }))}
+                          onDeleted={() => setMinuteModal((prev) => ({ ...prev, minute: null }))}
+                        />
+                      ) : (
+                        <MinuteEditor
+                          reservationId={res.id}
+                          token={accessToken}
+                          companyId={companyId}
+                          onSaved={(m) => setMinuteModal((prev) => ({ ...prev, minute: m }))}
+                        />
+                      ))}
                   </>
                 );
               })()}
