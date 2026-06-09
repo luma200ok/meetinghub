@@ -18,7 +18,14 @@ class AuthService:
 
     def signup(self, email: str, password: str) -> dict:
         email = self._normalize_email(email)
-        auth_response = create_auth_user(email, password)
+        
+        try:
+            auth_response = create_auth_user(email, password)
+        except Exception as e:
+            if "already registered" in str(e).lower() or "user already exists" in str(e).lower():
+                raise ValueError('이미 가입된 이메일입니다.')
+            raise ValueError(f'회원가입에 실패했습니다: {str(e)}')
+            
         user = auth_response.user
         if user is None:
             raise ValueError('회원가입에 실패했습니다.')
@@ -28,6 +35,17 @@ class AuthService:
             'user': profile,
             'session': self._serialize_session(getattr(auth_response, 'session', None)),
         }
+
+    def sync_oauth_user(self, user) -> dict:
+        email = self._normalize_email(getattr(user, 'email', ''))
+        if not email:
+            raise ValueError('OAuth 사용자 이메일이 없습니다.')
+            
+        user_metadata = getattr(user, 'user_metadata', {}) or {}
+        name = user_metadata.get('name') or user_metadata.get('full_name')
+        
+        profile = UserRepository().upsert_profile(user.id, email, name)
+        return {'user': profile}
 
     def invite(self, email: str, company_id: str) -> dict:
         user_id = self._current_user_id()

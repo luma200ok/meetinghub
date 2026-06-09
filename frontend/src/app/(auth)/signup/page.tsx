@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { api } from "@/lib/api/client";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 
@@ -17,6 +18,24 @@ export default function SignupPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleOAuthLogin(provider: 'google' | 'kakao') {
+    setIsSubmitting(true);
+    setError("");
+    try {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (signInError) throw signInError;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "소셜 로그인에 실패했습니다.");
+      setIsSubmitting(false);
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -78,7 +97,11 @@ export default function SignupPage() {
         <div className="w-full glass-card p-stack-lg rounded-xl shadow-sm flex flex-col space-y-stack-md border border-white/30 backdrop-blur-md">
           {/* Social Login Buttons */}
           <div className="flex flex-col space-y-3">
-            <button type="button" className="flex items-center justify-center gap-3 w-full py-4 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-800 hover:bg-slate-50 transition-all duration-200 cursor-pointer active:scale-[0.98] shadow-sm">
+            <button 
+              type="button" 
+              onClick={() => handleOAuthLogin('google')}
+              disabled={isSubmitting}
+              className="flex items-center justify-center gap-3 w-full py-4 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-800 hover:bg-slate-50 transition-all duration-200 cursor-pointer active:scale-[0.98] shadow-sm disabled:opacity-50">
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
@@ -87,11 +110,15 @@ export default function SignupPage() {
               </svg>
               <span>Google로 계속하기</span>
             </button>
-            <button type="button" className="flex items-center justify-center gap-3 w-full py-4 bg-black text-white rounded-lg text-sm font-semibold hover:bg-zinc-900 transition-all duration-200 cursor-pointer active:scale-[0.98] shadow-sm">
+            <button 
+              type="button" 
+              onClick={() => handleOAuthLogin('kakao')}
+              disabled={isSubmitting}
+              className="flex items-center justify-center gap-3 w-full py-4 bg-[#FEE500] text-[#191919] rounded-lg text-sm font-semibold hover:bg-[#FCE000] transition-all duration-200 cursor-pointer active:scale-[0.98] shadow-sm disabled:opacity-50">
               <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-.96.04-2.13.64-2.82 1.45-.6.7-1.13 1.84-.99 2.94.97.08 2.07-.42 2.82-1.33z"></path>
+                <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.707 4.8 4.27 6.054-.188.702-.68 2.531-.778 2.9-.123.463.16.458.337.34 1.38-.918 3.195-2.182 3.882-2.651.42.062.85.097 1.289.097 4.97 0 9-3.186 9-7.115S16.97 3 12 3z"></path>
               </svg>
-              <span>Apple로 계속하기</span>
+              <span>Kakao로 계속하기</span>
             </button>
           </div>
 

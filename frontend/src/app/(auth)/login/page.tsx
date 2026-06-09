@@ -14,6 +14,24 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  async function handleOAuthLogin(provider: 'google' | 'kakao') {
+    setIsSubmitting(true);
+    setError("");
+    try {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (signInError) throw signInError;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "소셜 로그인에 실패했습니다.");
+      setIsSubmitting(false);
+    }
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
@@ -63,7 +81,11 @@ export default function LoginPage() {
         
         {/* Social Logins */}
         <div className="grid grid-cols-2 gap-gutter mb-stack-lg">
-          <button type="button" className="flex items-center justify-center gap-2 py-3 px-4 bg-white border border-slate-200 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-all duration-200 text-slate-800 cursor-pointer shadow-sm">
+          <button 
+            type="button" 
+            onClick={() => handleOAuthLogin('google')}
+            disabled={isSubmitting}
+            className="flex items-center justify-center gap-2 py-3 px-4 bg-white border border-slate-200 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-all duration-200 text-slate-800 cursor-pointer shadow-sm disabled:opacity-50">
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
@@ -72,7 +94,11 @@ export default function LoginPage() {
             </svg>
             <span>Google</span>
           </button>
-          <button type="button" className="flex items-center justify-center gap-2 py-3 px-4 bg-[#FEE500] text-[#191919] rounded-lg text-sm font-semibold hover:bg-[#FCE000] transition-all duration-200 cursor-pointer shadow-sm">
+          <button 
+            type="button" 
+            onClick={() => handleOAuthLogin('kakao')}
+            disabled={isSubmitting}
+            className="flex items-center justify-center gap-2 py-3 px-4 bg-[#FEE500] text-[#191919] rounded-lg text-sm font-semibold hover:bg-[#FCE000] transition-all duration-200 cursor-pointer shadow-sm disabled:opacity-50">
             <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
               <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.707 4.8 4.27 6.054-.188.702-.68 2.531-.778 2.9-.123.463.16.458.337.34 1.38-.918 3.195-2.182 3.882-2.651.42.062.85.097 1.289.097 4.97 0 9-3.186 9-7.115S16.97 3 12 3z"></path>
             </svg>
