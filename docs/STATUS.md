@@ -11,8 +11,8 @@
 ## 인프라
 | 영역 | 상태 |
 |------|------|
-| 프론트 (Next.js) | Netlify(`meeting-hub-ai`) — `netlify.toml`에 공개 `NEXT_PUBLIC_*` 고정(#25), API URL=`meetinghub-ai.onrender.com`. `npm run build` PASS |
-| 백엔드 (Flask) | Render(`meetinghub-ai`, `meetinghub-ai.onrender.com`) — `/health` 200 확인, Render→Supabase OK. Python 3.11.9(#23). pytest PASS. ⚠️ 대시보드 `CORS_ORIGINS`에 Netlify 출처 추가 필요 |
+| 프론트 (Next.js) | **Vercel** `meetinghub-lime.vercel.app`(프로덕션) — 실기능 E2E 통과(가입→온보딩→기업생성→대시보드). Netlify(`meeting-hub-ai`)도 병행. ⚠️ Vercel **Preview** 환경엔 `NEXT_PUBLIC_*` 미설정이라 PR 프리뷰 배포 실패(프로덕션 무관, 선택적 보강) |
+| 백엔드 (Flask) | Render(`meetinghub-ai.onrender.com`) — `/health` 200, Render→Supabase OK. Python 3.11.9(#23). pytest 82 PASS. ✅ `CORS_ORIGINS`에 Vercel 출처 추가됨(Render 대시보드 + render.yaml) — 2026-06-10 |
 | DB / Auth | Supabase Cloud `toptwnqbqrqefhlbeelb` (ap-southeast-1) — 전 테이블 RLS 활성화 |
 | AI | OpenAI GPT-4o |
 
@@ -38,7 +38,7 @@
 ---
 
 ## 마지막 머지 PR (2026-06-09~10)
-- **#52** AI 분석·Action Item 구현 + 회의록 FE 연결(Closes #37,#46) — 메타가 IDOR 5건·502버그 수정 + 회귀테스트 4건 후 머지 / **#56** MinuteViewer 빌드 가드
+- **#59** 다크모드 검정 바탕 제거(라이트 테마 일관성, color-scheme:light) — Vercel 프로덕션 반영 확인 / **#52** AI 분석·Action Item 구현 + 회의록 FE 연결(Closes #37,#46) — 메타가 IDOR 5건·502버그 수정 + 회귀테스트 4건 후 머지 / **#56** MinuteViewer 빌드 가드
 - **#58** getByReservation 인증오류 삼킴(Closes #57) / **#55** 세로 사이드바 + 중첩 main 해소(Closes #6) / **#54** meeting-rooms 레이아웃
 - **#51** 업무 생성(Closes #45) / **#50** RLS defense-in-depth+재귀수정 / **#49** 회의록·조직도 IDOR(Closes #29,#30) / **#48**(Closes #38) / **#43**(Closes #12)
 
