@@ -20,8 +20,10 @@ export const minutesApi = {
         { headers: authHeaders(token, companyId) },
       );
     } catch (e: unknown) {
-      // 회의록 미존재(404) 또는 한국어 에러 메시지 모두 null로 처리
-      if (e instanceof Error && (e.message.includes("404") || e.message.includes("없습니다"))) return null;
+      // 회의록 미존재(404)만 null 로 처리. 401/403(인증·권한 실패)은 그대로 던져
+      // '회의록 없음'으로 조용히 묻히지 않게 한다. (메시지 문자열 "없습니다" 매칭은
+      // 401 "인증된 사용자를 확인할 수 없습니다." 까지 삼켜 버그였음)
+      if ((e as { status?: number })?.status === 404) return null;
       throw e;
     }
   },
