@@ -135,6 +135,14 @@ git push origin backend/reservation
 > 담당 영역은 `backend/app/routes/`·`services/` 상단 주석(`# 담당: 홍길동`)으로도 표시돼 있습니다.
 > API 명세는 [docs/api-contract.md](docs/api-contract.md), DB 스키마는 [backend/db/schema.sql](backend/db/schema.sql) 참고.
 
+## 디자인 레퍼런스 🎨
+
+Google Stitch 디자인 시안(화면 14 + 디자인시스템)이 정리되어 있습니다.
+
+👉 **[docs/design/stitch/README.md](docs/design/stitch/README.md)** — 화면 목록 · 담당 매핑 · 디자인 토큰 · 사용 원칙
+
+> ⚠️ 레퍼런스용입니다. 기존 기능 페이지를 덮어쓰지 말고 디자인만 점진 적용하세요.
+
 ## MVP 범위 (PRD §17)
 회원가입 · 기업 생성 · 초대 기반 조직도 · 회의실 관리 · 회의 예약 · 참석자 관리 · 5분 전 알림 · 회의록 작성 · AI 요약 · AI Action Item · 업무 관리 · Dashboard
 
