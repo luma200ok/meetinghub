@@ -7,12 +7,11 @@ load_dotenv()
 
 
 class Config:
-    SECRET_KEY: str = os.environ.get('SECRET_KEY', 'default-flask-secret-key')
+    SECRET_KEY: str = os.environ['SECRET_KEY']
 
-    SUPABASE_URL: str     = os.environ.get('SUPABASE_URL', 'https://placeholder-project.supabase.co')
-    SUPABASE_SERVICE_KEY: str = os.environ.get('SUPABASE_SERVICE_KEY', 'placeholder-service-key')
+    SUPABASE_URL: str     = os.environ['SUPABASE_URL']
+    SUPABASE_SERVICE_KEY: str = os.environ['SUPABASE_SERVICE_KEY']
 
-    OPENAI_API_KEY: str   = os.environ.get('OPENAI_API_KEY', '')
+    OPENAI_API_KEY: str   = os.environ['OPENAI_API_KEY']
 
     CORS_ORIGINS: list[str] = os.environ.get('CORS_ORIGINS', 'http://localhost:3000').split(',')
-
