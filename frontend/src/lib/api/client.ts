@@ -21,8 +21,11 @@ const BASE_URL = resolveApiBaseUrl();
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    // ...init 를 먼저 펼치고 headers 를 마지막에 병합한다.
+    // 호출자가 authHeaders 등 custom headers 를 넘길 때 'Content-Type' 이 사라져
+    // 백엔드 request.get_json() 이 415(Unsupported Media Type)로 깨지던 버그 방지.
     ...init,
+    headers: { 'Content-Type': 'application/json', ...init?.headers },
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
