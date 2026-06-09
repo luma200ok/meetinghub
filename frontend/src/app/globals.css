@@ -3,6 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* 앱은 라이트 테마 전용(모든 --color-* 토큰이 라이트값). OS 다크모드에서도
+     폼 컨트롤·스크롤바까지 라이트로 강제해 일관성 유지. */
+  color-scheme: light;
 }
 
 @theme {
@@ -85,12 +88,8 @@
   --color-on-error-container-custom: #93000a;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* 다크모드 오버라이드 제거: --background 만 검정으로 바뀌고 컴포넌트 토큰은 라이트라
+   body 만 검정이 되어 회의록 등 bg-background 영역이 깨지던 문제(검정 바탕) 해결. */
 
 body {
   background: var(--background);
