@@ -38,3 +38,4 @@ def accept_invite():
 def oauth_sync():
     result = _svc.sync_oauth_user(g.user)
     return jsonify(result), 200
+
