@@ -1,3 +1,4 @@
+import os
 from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
@@ -5,6 +6,7 @@ from unittest.mock import Mock, patch
 from flask import Flask, g
 
 from app.services.auth_service import AuthService
+from app import create_app
 from app.services.company_service import CompanyService
 from app.services.organization_service import OrganizationService
 
@@ -63,6 +65,84 @@ class OrganizationFeatureTest(unittest.TestCase):
         )
         self.assertEqual(result['invite_url'], '/invite/token-1')
 
+    @patch('app.services.auth_service.create_auth_user')
+    @patch('app.services.auth_service.authenticate_auth_user')
+    @patch('app.services.auth_service.UserRepository')
+    @patch('app.services.auth_service.InvitationRepository')
+    @patch('app.services.auth_service.CompanyMemberRepository')
+    def test_existing_user_accept_invite_requires_password_verification(
+        self,
+        member_repo_cls,
+        invitation_repo_cls,
+        user_repo_cls,
+        authenticate_mock,
+        create_mock,
+    ):
+        invitation_repo_cls.return_value.find_by_token.return_value = {
+            'id': 'invite-1',
+            'email': 'member@example.com',
+            'company_id': 'company-1',
+            'accepted': False,
+        }
+        user_repo_cls.return_value.find_by_email.return_value = {
+            'id': 'user-1',
+            'email': 'member@example.com',
+        }
+        authenticate_mock.return_value = SimpleNamespace(
+            user=SimpleNamespace(id='user-1'),
+            session=SimpleNamespace(
+                access_token='access-1',
+                refresh_token='refresh-1',
+                expires_at=123,
+            ),
+        )
+        member_repo_cls.return_value.add_member.return_value = {
+            'user_id': 'user-1',
+            'company_id': 'company-1',
+            'role': 'MEMBER',
+        }
+
+        result = AuthService().accept_invite('token-1', 'secret')
+
+        authenticate_mock.assert_called_once_with('member@example.com', 'secret')
+        create_mock.assert_not_called()
+        member_repo_cls.return_value.add_member.assert_called_once_with(
+            'user-1',
+            'company-1',
+            role='MEMBER',
+        )
+        invitation_repo_cls.return_value.mark_accepted.assert_called_once_with('invite-1')
+        self.assertEqual(result['session']['access_token'], 'access-1')
+
+    @patch('app.services.auth_service.authenticate_auth_user')
+    @patch('app.services.auth_service.UserRepository')
+    @patch('app.services.auth_service.InvitationRepository')
+    @patch('app.services.auth_service.CompanyMemberRepository')
+    def test_existing_user_accept_invite_rejects_invalid_password(
+        self,
+        member_repo_cls,
+        invitation_repo_cls,
+        user_repo_cls,
+        authenticate_mock,
+    ):
+        invitation_repo_cls.return_value.find_by_token.return_value = {
+            'id': 'invite-1',
+            'email': 'member@example.com',
+            'company_id': 'company-1',
+            'accepted': False,
+        }
+        user_repo_cls.return_value.find_by_email.return_value = {
+            'id': 'user-1',
+            'email': 'member@example.com',
+        }
+        authenticate_mock.side_effect = RuntimeError('invalid credentials')
+
+        with self.assertRaises(PermissionError):
+            AuthService().accept_invite('token-1', 'wrong')
+
+        member_repo_cls.return_value.add_member.assert_not_called()
+        invitation_repo_cls.return_value.mark_accepted.assert_not_called()
+
     @patch('app.services.organization_service.CompanyMemberRepository')
     @patch('app.services.organization_service.PositionRepository')
     @patch('app.services.organization_service.OrganizationMemberRepository')
@@ -114,6 +194,33 @@ class OrganizationFeatureTest(unittest.TestCase):
 
             with self.assertRaises(PermissionError):
                 OrganizationService().create_department({'name': 'Product'})
+
+    def test_standard_errors_are_registered_in_error_module(self):
+        with patch.dict(os.environ, {
+            'SECRET_KEY': 'test-secret',
+            'SUPABASE_URL': 'https://example.supabase.co',
+            'SUPABASE_SERVICE_KEY': 'service-key',
+            'OPENAI_API_KEY': 'openai-key',
+        }):
+            app = create_app()
+
+        @app.get('/bad-request')
+        def bad_request():
+            raise ValueError('bad request')
+
+        @app.get('/forbidden')
+        def forbidden():
+            raise PermissionError('forbidden')
+
+        client = app.test_client()
+
+        bad_response = client.get('/bad-request')
+        forbidden_response = client.get('/forbidden')
+
+        self.assertEqual(bad_response.status_code, 400)
+        self.assertEqual(bad_response.get_json(), {'error': 'bad request'})
+        self.assertEqual(forbidden_response.status_code, 403)
+        self.assertEqual(forbidden_response.get_json(), {'error': 'forbidden'})
 
 
 if __name__ == '__main__':
