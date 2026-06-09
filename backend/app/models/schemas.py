@@ -61,6 +61,32 @@ class ReservationCreateRequest(BaseModel):
     title: str
     start_at: datetime
     end_at: datetime
+    user_ids: Optional[list[str]] = None  # 참석자 ID 목록
+
+
+class ReservationUpdateRequest(BaseModel):
+    room_id: Optional[str] = None
+    title: Optional[str] = None
+    start_at: Optional[datetime] = None
+    end_at: Optional[datetime] = None
+    status: Optional[ReservationStatus] = None
+
+
+class MeetingRoomCreateRequest(BaseModel):
+    name: str
+    location: Optional[str] = None
+    capacity: Optional[int] = None
+
+
+class MeetingRoomUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    location: Optional[str] = None
+    capacity: Optional[int] = None
+
+
+class ReservationAttendeeAddRequest(BaseModel):
+    user_ids: list[str]
+
 
 
 # TODO: MeetingRoom / Minute / ActionItem / Notification 스키마 추가
