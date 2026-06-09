@@ -9,7 +9,6 @@ type NavItem = { href: string; label: string; icon: string };
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "대시보드", icon: "dashboard" },
   { href: "/meeting-rooms", label: "회의실", icon: "meeting_room" },
-  { href: "/reservations", label: "예약", icon: "event" },
   { href: "/minutes", label: "회의록", icon: "description" },
   { href: "/tasks", label: "업무", icon: "task_alt" },
   { href: "/search", label: "검색", icon: "search" },
