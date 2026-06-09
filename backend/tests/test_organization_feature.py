@@ -195,6 +195,75 @@ class OrganizationFeatureTest(unittest.TestCase):
             with self.assertRaises(PermissionError):
                 OrganizationService().create_department({'name': 'Product'})
 
+    # ── cross-tenant IDOR 방어 (#30) ──────────────────────────────────────────
+    # 조회 3종(부서/직급/직원)은 헤더 회사의 실제 구성원만 허용.
+    # 비구성원이면 PermissionError(→403), PII(직원 목록 등)가 새지 않아야 한다.
+
+    @patch('app.services.organization_service.OrganizationMemberRepository')
+    @patch('app.services.organization_service.PositionRepository')
+    @patch('app.services.organization_service.DepartmentRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_list_departments_non_member_rejected(
+        self, member_cls, department_repo_cls, _position_repo_cls, _member_list_repo_cls,
+    ):
+        member_cls.return_value.find_by_user_company.return_value = None
+        with self.app.test_request_context(headers={'X-Company-Id': 'other-company'}):
+            g.user = SimpleNamespace(id='outsider-1')
+            g.company_id = 'other-company'
+            with self.assertRaises(PermissionError):
+                OrganizationService().list_departments()
+        department_repo_cls.return_value.find_all.assert_not_called()
+
+    @patch('app.services.organization_service.OrganizationMemberRepository')
+    @patch('app.services.organization_service.PositionRepository')
+    @patch('app.services.organization_service.DepartmentRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_list_positions_non_member_rejected(
+        self, member_cls, _department_repo_cls, position_repo_cls, _member_list_repo_cls,
+    ):
+        member_cls.return_value.find_by_user_company.return_value = None
+        with self.app.test_request_context(headers={'X-Company-Id': 'other-company'}):
+            g.user = SimpleNamespace(id='outsider-1')
+            g.company_id = 'other-company'
+            with self.assertRaises(PermissionError):
+                OrganizationService().list_positions()
+        position_repo_cls.return_value.find_all.assert_not_called()
+
+    @patch('app.services.organization_service.OrganizationMemberRepository')
+    @patch('app.services.organization_service.PositionRepository')
+    @patch('app.services.organization_service.DepartmentRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_list_members_non_member_rejected_no_pii_leak(
+        self, member_cls, _department_repo_cls, _position_repo_cls, member_list_repo_cls,
+    ):
+        # 핵심: 비구성원에게 직원 PII(이메일·이름)가 절대 반환되면 안 된다.
+        member_cls.return_value.find_by_user_company.return_value = None
+        with self.app.test_request_context(headers={'X-Company-Id': 'other-company'}):
+            g.user = SimpleNamespace(id='outsider-1')
+            g.company_id = 'other-company'
+            with self.assertRaises(PermissionError):
+                OrganizationService().list_members()
+        member_list_repo_cls.return_value.list_members.assert_not_called()
+
+    @patch('app.services.organization_service.OrganizationMemberRepository')
+    @patch('app.services.organization_service.PositionRepository')
+    @patch('app.services.organization_service.DepartmentRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_list_members_member_allowed(
+        self, member_cls, _department_repo_cls, _position_repo_cls, member_list_repo_cls,
+    ):
+        # 회귀 방지: 정상 구성원은 조회가 통과해야 한다.
+        member_cls.return_value.find_by_user_company.return_value = {'id': 'm', 'role': 'MEMBER'}
+        member_list_repo_cls.return_value.list_members.return_value = [
+            {'user_id': 'u1', 'name': 'Alice', 'email': 'alice@example.com'},
+        ]
+        with self.app.test_request_context(headers={'X-Company-Id': 'company-1'}):
+            g.user = SimpleNamespace(id='member-1')
+            g.company_id = 'company-1'
+            result = OrganizationService().list_members()
+        member_list_repo_cls.return_value.list_members.assert_called_once_with('company-1')
+        self.assertEqual(result[0]['email'], 'alice@example.com')
+
     def test_standard_errors_are_registered_in_error_module(self):
         with patch.dict(os.environ, {
             'SECRET_KEY': 'test-secret',

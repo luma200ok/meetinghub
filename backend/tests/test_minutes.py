@@ -186,3 +186,72 @@ class TestMinuteRoutes:
         resp = client.get("/health")
         assert resp.status_code == 200
         assert resp.get_json()["status"] == "ok"
+
+
+# ── cross-tenant IDOR 방어 (#29) ───────────────────────────────────────────────
+# X-Company-Id 헤더를 타 회사로 바꿔도, 그 회사의 실제 구성원이 아니면 403.
+# tenant_guard.CompanyMemberRepository 를 비구성원(None)으로 만들어 검증한다.
+
+class TestMinuteCrossTenant:
+    def _non_member_repo(self):
+        """find_by_user_company → None (비구성원) 인 CompanyMemberRepository mock."""
+        m = MagicMock()
+        m.return_value.find_by_user_company.return_value = None
+        return m
+
+    def test_list_non_member_403(self, client):
+        repo = _repo()
+        with patch("app.services.tenant_guard.CompanyMemberRepository", self._non_member_repo()), \
+             patch("app.services.minute_service.repo", repo):
+            resp = client.get(
+                "/api/minutes",
+                headers=auth_headers(company_id=OTHER_COMPANY_ID),
+            )
+        assert resp.status_code == 403
+        # 멤버십 차단이 먼저 일어나 데이터 조회까지 가지 않아야 한다.
+        repo.list_by_company.assert_not_called()
+
+    def test_get_non_member_403(self, client):
+        repo = _repo()
+        with patch("app.services.tenant_guard.CompanyMemberRepository", self._non_member_repo()), \
+             patch("app.services.minute_service.repo", repo):
+            resp = client.get(
+                "/api/minutes/minute-uuid-1",
+                headers=auth_headers(company_id=OTHER_COMPANY_ID),
+            )
+        assert resp.status_code == 403
+        repo.find_by_id.assert_not_called()
+
+    def test_get_by_reservation_non_member_403(self, client):
+        repo = _repo()
+        with patch("app.services.tenant_guard.CompanyMemberRepository", self._non_member_repo()), \
+             patch("app.services.minute_service.repo", repo):
+            resp = client.get(
+                f"/api/minutes/by-reservation/{RESERVATION_ID}",
+                headers=auth_headers(company_id=OTHER_COMPANY_ID),
+            )
+        assert resp.status_code == 403
+        repo.find_by_reservation.assert_not_called()
+
+    def test_create_non_member_403(self, client):
+        repo = _repo()
+        with patch("app.services.tenant_guard.CompanyMemberRepository", self._non_member_repo()), \
+             patch("app.services.minute_service.repo", repo):
+            resp = client.post(
+                "/api/minutes",
+                json={"reservation_id": RESERVATION_ID, "content": "타 회사에 무단 생성"},
+                headers=auth_headers(company_id=OTHER_COMPANY_ID),
+            )
+        assert resp.status_code == 403
+        # 타 회사에 회의록이 생성되면 안 된다.
+        repo.create.assert_not_called()
+
+    def test_member_still_allowed_after_guard(self, client):
+        """회귀 방지: 정상 구성원은 멤버십 가드를 통과해 200."""
+        member_repo = MagicMock()
+        member_repo.return_value.find_by_user_company.return_value = {"id": "m", "role": "MEMBER"}
+        with patch("app.services.tenant_guard.CompanyMemberRepository", member_repo), \
+             patch("app.services.minute_service.repo", _repo()):
+            resp = client.get("/api/minutes", headers=auth_headers())
+        assert resp.status_code == 200
+        assert isinstance(resp.get_json(), list)
