@@ -58,6 +58,7 @@ class DashboardService:
             sb.table('meeting_reservations')
             .select('id, title, start_at, status')
             .eq('company_id', company_id)
+            .neq('status', 'CANCELLED')  # 취소된 회의는 '최근 회의'에서 제외 (PRD §13)
             .order('start_at', desc=True)
             .limit(5)
             .execute()
