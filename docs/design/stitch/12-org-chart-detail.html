@@ -1,0 +1,493 @@
+<!DOCTYPE html><html class="light" lang="ko"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Nexus AI | Org Structure</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#004b70",
+                    "secondary": "#3b665b",
+                    "primary-fixed": "#cae6ff",
+                    "tertiary-fixed": "#e1e1f5",
+                    "outline-variant": "#c0c7cf",
+                    "on-tertiary-fixed": "#191b29",
+                    "on-primary-container": "#00496d",
+                    "error": "#ba1a1a",
+                    "inverse-surface": "#263142",
+                    "on-surface": "#111c2c",
+                    "on-primary": "#ffffff",
+                    "background": "#f9f9ff",
+                    "surface-tint": "#1c648e",
+                    "on-secondary-fixed-variant": "#224e44",
+                    "on-secondary-container": "#3f6b60",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#e7eeff",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#d8e3fa",
+                    "tertiary-container": "#b1b1c4",
+                    "surface-dim": "#cfdaf1",
+                    "on-error": "#ffffff",
+                    "outline": "#71787f",
+                    "primary-fixed-dim": "#90cdfd",
+                    "surface-variant": "#d8e3fa",
+                    "primary-container": "#7cb9e8",
+                    "primary": "#1c648e",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed-dim": "#a2d0c2",
+                    "on-primary-fixed": "#001e30",
+                    "on-tertiary-fixed-variant": "#444655",
+                    "secondary-container": "#bae9db",
+                    "tertiary-fixed-dim": "#c5c5d8",
+                    "on-error-container": "#93000a",
+                    "on-background": "#111c2c",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#424453",
+                    "inverse-on-surface": "#ebf1ff",
+                    "tertiary": "#5c5d6e",
+                    "surface-bright": "#f9f9ff",
+                    "surface-container-low": "#f0f3ff",
+                    "surface": "#f9f9ff",
+                    "secondary-fixed": "#bdecde",
+                    "on-secondary-fixed": "#00201a",
+                    "inverse-primary": "#90cdfd",
+                    "surface-container-high": "#dee8ff",
+                    "on-surface-variant": "#41484e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-md": "16px",
+                    "margin-mobile": "16px",
+                    "container-max-width": "1440px",
+                    "stack-lg": "32px",
+                    "margin-desktop": "48px",
+                    "gutter": "24px",
+                    "unit": "4px",
+                    "stack-sm": "8px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "label-md": ["Hanken Grotesk"],
+                    "headline-xl": ["Hanken Grotesk"],
+                    "headline-md": ["Hanken Grotesk"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "body-md": ["Hanken Grotesk"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "label-sm": ["Hanken Grotesk"],
+                    "body-sm": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "14px", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f9f9ff;
+            color: #111c2c;
+            font-family: 'Hanken Grotesk', sans-serif;
+            overflow-x: hidden;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cae6ff;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="flex bg-background">
+<!-- SideNavBar (Shared Component JSON) -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r border-outline-variant bg-surface flex flex-col py-6 px-4 z-50">
+<div class="mb-10 px-2 flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="corporate_fare">corporate_fare</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Enterprise AI</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant opacity-70">Collaboration Suite</p>
+</div>
+</div>
+<button class="mb-8 w-full py-3 px-4 rounded-xl bg-primary text-on-primary font-label-md flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+            New Analysis
+        </button>
+<nav class="flex-1 space-y-1 overflow-y-auto custom-scrollbar">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+<span class="font-label-md">Calendar</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span class="font-label-md">AI Minutes</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-label-md">Tasks</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary-container text-on-secondary-container font-semibold transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="corporate_fare" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
+<span class="font-label-md">Admin</span>
+</a>
+</nav>
+<div class="pt-6 border-t border-outline-variant space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-md">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 w-full min-h-screen flex flex-col">
+<!-- TopNavBar (Shared Component JSON) -->
+<header class="flex justify-between items-center w-full h-16 px-margin-desktop bg-surface-bright sticky top-0 z-40 border-b border-outline-variant shadow-sm">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md font-black text-primary">Nexus AI</span>
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary font-body-sm transition-all" placeholder="Search members..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="bg-primary-container text-on-primary-container px-5 py-2 rounded-full font-label-sm hover:opacity-90 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                    AI Chat
+                </button>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="history">history</span>
+<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjAPxt23lJgg25h0FyNocUESxE3NhJeKpa8rttlB_VN59VwHcDDiNsAtH2ZCfkmcn4vY7CBzULyq_Lqnfv8oTFAmcJ9k5Lt91Go3-63-XJGQkE4LIRBC7WcKnx6TnUtSNPz2mbBIq7GnEp550bbjkTjR81Hwu7s-PeOO_sJoNFM9aWawONHI_6eIv2etQRtAk62_Smz5Xnql3o4y_DCNTg0vDF9uAtBKvTcEq0JtvSDRYqmZSta7W8eLR4Py0smczhGOX39yBUILU">
+</div>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<section class="p-10 flex-1">
+<!-- Breadcrumbs / Header Action -->
+<div class="flex justify-between items-end mb-10">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Organization Structure</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage departments and team members within your organization.</p>
+</div>
+<button class="px-6 py-3 bg-secondary text-on-secondary rounded-full font-label-md flex items-center gap-2 hover:scale-[1.02] transition-all shadow-lg shadow-secondary/10">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+                    직원 초대
+                </button>
+</div>
+<!-- Bento Layout for Org & Employees -->
+<div class="bento-grid">
+<!-- Left Column: Department Tree -->
+<div class="bg-surface-container-lowest rounded-3xl p-6 shadow-sm border border-outline-variant/30 flex flex-col h-[calc(100vh-280px)]">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-label-md text-primary uppercase tracking-wider">Departments</h3>
+<span class="material-symbols-outlined text-on-surface-variant text-lg cursor-pointer" data-icon="account_tree">account_tree</span>
+</div>
+<div class="space-y-2 overflow-y-auto custom-scrollbar flex-1 pr-2">
+<!-- Management -->
+<div class="group">
+<div class="flex items-center gap-3 p-3 rounded-xl bg-primary-container/20 text-primary cursor-pointer hover:bg-primary-container/30 transition-all border border-primary/10">
+<span class="material-symbols-outlined text-sm" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+<span class="material-symbols-outlined" data-icon="corporate_fare" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
+<span class="font-label-md">Management</span>
+<span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10">4</span>
+</div>
+</div>
+<!-- CTO Sub-tree -->
+<div class="ml-4 space-y-2 mt-2 border-l-2 border-surface-container-high pl-4">
+<div class="flex items-center gap-3 p-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+<span class="material-symbols-outlined" data-icon="developer_mode">developer_mode</span>
+<span class="font-label-md">CTO Office</span>
+<span class="ml-auto text-xs opacity-50">2</span>
+</div>
+<div class="ml-4 space-y-1">
+<div class="flex items-center gap-3 p-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all">
+<span class="material-symbols-outlined" data-icon="database">database</span>
+<span class="font-body-sm">Backend</span>
+</div>
+<div class="flex items-center gap-3 p-2.5 rounded-xl bg-secondary-container/30 text-secondary border border-secondary/20 cursor-pointer transition-all">
+<span class="material-symbols-outlined" data-icon="html">html</span>
+<span class="font-body-sm font-semibold">Frontend</span>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary ml-auto"></div>
+</div>
+<div class="flex items-center gap-3 p-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all">
+<span class="material-symbols-outlined" data-icon="neurology" style="font-variation-settings: 'FILL' 1;">neurology</span>
+<span class="font-body-sm">AI Team</span>
+</div>
+</div>
+</div>
+<!-- HR/Sales placeholders -->
+<div class="flex items-center gap-3 p-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all opacity-60">
+<span class="material-symbols-outlined text-sm" data-icon="keyboard_arrow_right">keyboard_arrow_right</span>
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-md">Human Resources</span>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all opacity-60">
+<span class="material-symbols-outlined text-sm" data-icon="keyboard_arrow_right">keyboard_arrow_right</span>
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-md">Sales &amp; Marketing</span>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/30">
+<div class="rounded-2xl bg-tertiary-fixed p-4 relative overflow-hidden group">
+
+<p class="font-label-sm text-on-tertiary-fixed relative z-10">Usage Insight</p>
+<p class="font-body-sm text-on-tertiary-fixed relative z-10 mt-1">Your team has grown by 12% this quarter.</p>
+</div>
+</div>
+</div>
+<!-- Right Column: Employee Table -->
+<div class="bg-surface-container-lowest rounded-3xl shadow-sm border border-outline-variant/30 flex flex-col h-[calc(100vh-280px)] overflow-hidden">
+<!-- Table Header Controls -->
+<div class="p-6 border-b border-outline-variant/30 flex justify-between items-center bg-surface-bright/50">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="html">html</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface leading-tight">Frontend Team</h3>
+<p class="font-label-sm text-on-surface-variant/70">8 Members Active</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="p-2.5 rounded-xl border border-outline-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="filter_list">filter_list</span>
+</button>
+<button class="p-2.5 rounded-xl border border-outline-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="download">download</span>
+</button>
+</div>
+</div>
+<!-- Table Content -->
+<div class="flex-1 overflow-y-auto custom-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead class="sticky top-0 bg-surface-bright/80 backdrop-blur-md z-10">
+<tr>
+<th class="px-6 py-4 font-label-sm text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/20">Name</th>
+<th class="px-6 py-4 font-label-sm text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/20">Email</th>
+<th class="px-6 py-4 font-label-sm text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/20">Position</th>
+<th class="px-6 py-4 font-label-sm text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/20">Join Date</th>
+<th class="px-6 py-4 font-label-sm text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/20"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Employee Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full bg-primary-container/40" data-alt="Professional headshot of a female lead software engineer with a soft studio lighting setup, smiling warmly in a bright modern office environment. The image uses a pastel palette of light mint and soft blue, maintaining a clean and high-end professional aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSzzhrSXAdWdB7PiS0gHtWI3e3cfTbk3CdDN2D7pCE_q3BhK0Z-rnmMmdKNE3lLTEihHtYfb9PIOIkuVy224dNtEYmDJMV-aMgXmCJQWWSlmHb6uJU4oge8ZbafOS2nM9-EmT52mUKs-m1_uEmU8eNVnltz-y8xzmy7b_j0FYw3CSsEpZBVrUxjXFE0lyLjmgo9hJGZN9sGSiWiE7aLU6ZRHj6Ngoou8lVd7cOHr-IE_IbruYEdxwJWqXAsE9JDPRqThSjt7mVtL4">
+<div>
+<p class="font-label-md text-on-surface">Jane Doe</p>
+<p class="font-body-sm text-on-surface-variant/60">Lead Developer</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-body-sm text-on-surface-variant">jane.doe@nexus.ai</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm">Senior FE</span>
+</td>
+<td class="px-6 py-4 font-body-sm text-on-surface-variant">2023-01-15</td>
+<td class="px-6 py-4 text-right">
+<button class="opacity-0 group-hover:opacity-100 p-2 hover:bg-surface-container-high rounded-lg transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Employee Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full bg-tertiary-container/40" data-alt="A portrait of a male creative technologist in a minimalist workspace, wearing a stylish light grey sweater. The background is softly blurred with hints of lush greenery and pastel-colored office furniture. High-key lighting creates a serene and productive workspace atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFKFP1ms9vCoMKUgXSNHaBeLTe4ICS9JaAC1Ohvnynaj8GN9RNzaL9rbh6W4XqyQEpoHu5kBb9waPAkVxVW_zVEhkwomB3Wb9f4T2qrm5RPxzcU9Hb6-eXH9Lr8z8k3HraxBY5ORk2FapL0eSsgf4weathEX00yjDcfuw_kiveWpEgZhuAh3AbUTHlfJkfEC-GRKAJyrkCt7LTrBB5qvjCFZ5oYeHCk9AjdAKk8I9MM-FEYGbe06gqdfn9nhqByKsmghouZaDKpic">
+<div>
+<p class="font-label-md text-on-surface">Samuel Kim</p>
+<p class="font-body-sm text-on-surface-variant/60">UI/UX Engineer</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-body-sm text-on-surface-variant">s.kim@nexus.ai</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-label-sm">Design Tech</span>
+</td>
+<td class="px-6 py-4 font-body-sm text-on-surface-variant">2023-05-22</td>
+<td class="px-6 py-4 text-right">
+<button class="opacity-0 group-hover:opacity-100 p-2 hover:bg-surface-container-high rounded-lg transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Employee Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full bg-secondary-container/40" data-alt="A bright and optimistic portrait of a software developer with a friendly expression. They are set against a modern studio background featuring soft-focus architectural elements in white and pastel blue tones. The lighting is diffused and professional, evoking a sense of creative collaboration." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoTaICH6l6f0bvEQKssQuN2AniuFcE0EuG-dmrpyqxKNEXce6qPS8ILsfpOQGl_-IeXSFPINo0Q3RWHzpWQVlavU53njwoZnCXR6LenIy5vl_V5V6HMdTQaQ-DWm__KFA96YvgkwgTPzmUbvuNpfuMJ-ycz7WmF2Rw_e6zjRo1_3xC9Q43heWjqlGcKjbvLZDoUitE-qLDKQHc158FemROhTSocCEzZDe3iqtGa8ZusP7xx9HfppKh40yrbbUJhA5NnUcFtPGVwzs">
+<div>
+<p class="font-label-md text-on-surface">Alex Lee</p>
+<p class="font-body-sm text-on-surface-variant/60">Frontend Engineer</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-body-sm text-on-surface-variant">a.lee@nexus.ai</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm">Mid-level</span>
+</td>
+<td class="px-6 py-4 font-body-sm text-on-surface-variant">2023-11-02</td>
+<td class="px-6 py-4 text-right">
+<button class="opacity-0 group-hover:opacity-100 p-2 hover:bg-surface-container-high rounded-lg transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Employee Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full bg-primary-container/40" data-alt="A clean, minimalist portrait of a young professional in a high-tech office. The scene is bathed in soft morning light filtering through large windows, highlighting a palette of light mints and airy whites. The style is modern, professional, and visually tranquil." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2aH23Av2MbMOkHGDR5VgetkdI3BvNF72F61OiLUQArUWwlouCcZiHkaLt9XA6Fudc-uHQzc-YsRY2P_HSMtja_w0UKQCYUurDfniEqOyvS7YfJKNO5fEYHHFRV-udjoJQcDwihIKo-AJl35r37zuXVwwIPyw_oVnVwZEcFDqwtxNZGlFBJ0TUK4berRcOTltA9pvZL4lvLEkST2OAzeaZj0rOHglmv1PrsqhRYg4Yl0wLsj45u1AtRVTcBVkMNc3QqiVzXyItNoY">
+<div>
+<p class="font-label-md text-on-surface">Minji Wong</p>
+<p class="font-body-sm text-on-surface-variant/60">Frontend Engineer</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-body-sm text-on-surface-variant">m.wong@nexus.ai</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm">Junior</span>
+</td>
+<td class="px-6 py-4 font-body-sm text-on-surface-variant">2024-02-14</td>
+<td class="px-6 py-4 text-right">
+<button class="opacity-0 group-hover:opacity-100 p-2 hover:bg-surface-container-high rounded-lg transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Modal Fragment (Invite) -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-300" id="inviteModal">
+<div class="absolute inset-0 bg-on-surface/20 backdrop-blur-sm"></div>
+<div class="relative w-[480px] bg-white rounded-[32px] p-8 shadow-2xl scale-95 transition-transform duration-300 glass-card border border-white">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">직원 초대</h3>
+<p class="font-body-sm text-on-surface-variant">Send an invitation email to a new team member.</p>
+</div>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors" onclick="toggleModal()">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="space-y-4">
+<div class="space-y-2">
+<label class="font-label-sm text-on-surface-variant px-1">Email Address</label>
+<input class="w-full px-5 py-3 rounded-2xl bg-surface-container-low border border-outline-variant/30 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="example@nexus.ai" type="email">
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="font-label-sm text-on-surface-variant px-1">Department</label>
+<select class="w-full px-5 py-3 rounded-2xl bg-surface-container-low border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none">
+<option>Frontend Team</option>
+<option>Backend Team</option>
+<option>AI Team</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-sm text-on-surface-variant px-1">Role</label>
+<select class="w-full px-5 py-3 rounded-2xl bg-surface-container-low border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none">
+<option>Member</option>
+<option>Admin</option>
+<option>Lead</option>
+</select>
+</div>
+</div>
+</div>
+<div class="mt-8 flex gap-3">
+<button class="flex-1 py-3 px-6 rounded-2xl font-label-md text-on-surface-variant hover:bg-surface-container-high transition-colors" onclick="toggleModal()">Cancel</button>
+<button class="flex-1 py-3 px-6 rounded-2xl font-label-md bg-primary text-on-primary shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">Send Invitation</button>
+</div>
+</div>
+</div>
+<script>
+        // Micro-interaction for Invite Button
+        const inviteBtn = document.querySelector('button:has(span[data-icon="person_add"])');
+        const modal = document.getElementById('inviteModal');
+        const modalContent = modal.querySelector('div.relative');
+
+        function toggleModal() {
+            const isOpen = modal.classList.contains('opacity-100');
+            if (isOpen) {
+                modal.classList.remove('opacity-100', 'pointer-events-auto');
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                modalContent.classList.add('scale-95');
+                modalContent.classList.remove('scale-100');
+            } else {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modal.classList.add('opacity-100', 'pointer-events-auto');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }
+        }
+
+        inviteBtn.addEventListener('click', toggleModal);
+
+        // Simple row hover effect enhancement
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.style.transform = 'translateX(4px)';
+            });
+            row.addEventListener('mouseleave', () => {
+                row.style.transform = 'translateX(0px)';
+            });
+            row.style.transition = 'transform 0.2s ease-out, background-color 0.2s ease';
+        });
+    </script>
+</body></html>

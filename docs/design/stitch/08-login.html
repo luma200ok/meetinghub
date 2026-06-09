@@ -1,0 +1,227 @@
+<!DOCTYPE html><html class="light" lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MeetingHub - 로그인</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body {
+            font-family: 'Hanken Grotesk', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .ai-glow {
+            box-shadow: 0 0 20px rgba(28, 100, 142, 0.05), inset 0 0 10px rgba(28, 100, 142, 0.02);
+        }
+        .btn-primary-action {
+            background: #1c648e;
+            transition: all 0.3s ease;
+        }
+        .btn-primary-action:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(28, 100, 142, 0.2);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "background": "#f9f9ff",
+                      "on-primary-fixed": "#001e30",
+                      "inverse-primary": "#90cdfd",
+                      "tertiary": "#5c5d6e",
+                      "on-secondary-container": "#3f6b60",
+                      "inverse-surface": "#263142",
+                      "secondary-fixed-dim": "#a2d0c2",
+                      "outline": "#71787f",
+                      "on-secondary": "#ffffff",
+                      "on-surface-variant": "#41484e",
+                      "on-secondary-fixed": "#00201a",
+                      "secondary": "#3b665b",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-fixed": "#e1e1f5",
+                      "on-error-container": "#93000a",
+                      "tertiary-container": "#b1b1c4",
+                      "outline-variant": "#c0c7cf",
+                      "surface-variant": "#d8e3fa",
+                      "surface-tint": "#1c648e",
+                      "error-container": "#ffdad6",
+                      "on-error": "#ffffff",
+                      "primary-container": "#7cb9e8",
+                      "tertiary-fixed-dim": "#c5c5d8",
+                      "inverse-on-surface": "#ebf1ff",
+                      "surface-container-low": "#f0f3ff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-high": "#dee8ff",
+                      "surface-container": "#e7eeff",
+                      "on-secondary-fixed-variant": "#224e44",
+                      "on-primary": "#ffffff",
+                      "on-surface": "#111c2c",
+                      "surface-container-highest": "#d8e3fa",
+                      "primary-fixed-dim": "#90cdfd",
+                      "on-primary-fixed-variant": "#004b70",
+                      "on-background": "#111c2c",
+                      "on-tertiary-container": "#424453",
+                      "surface-dim": "#cfdaf1",
+                      "secondary-container": "#bae9db",
+                      "primary-fixed": "#cae6ff",
+                      "secondary-fixed": "#bdecde",
+                      "primary": "#1c648e",
+                      "on-tertiary-fixed-variant": "#444655",
+                      "error": "#ba1a1a",
+                      "on-primary-container": "#00496d",
+                      "surface": "#f9f9ff",
+                      "surface-bright": "#f9f9ff",
+                      "on-tertiary-fixed": "#191b29"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-sm": "8px",
+                      "stack-lg": "32px",
+                      "margin-mobile": "16px",
+                      "unit": "4px",
+                      "gutter": "24px",
+                      "container-max-width": "1440px",
+                      "margin-desktop": "48px",
+                      "stack-md": "16px"
+              },
+              "fontFamily": {
+                      "headline-xl": ["Hanken Grotesk"],
+                      "label-md": ["Hanken Grotesk"],
+                      "headline-lg": ["Hanken Grotesk"],
+                      "label-sm": ["Hanken Grotesk"],
+                      "body-lg": ["Hanken Grotesk"],
+                      "body-sm": ["Hanken Grotesk"],
+                      "headline-lg-mobile": ["Hanken Grotesk"],
+                      "body-md": ["Hanken Grotesk"],
+                      "headline-md": ["Hanken Grotesk"]
+              },
+              "fontSize": {
+                      "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "14px", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen flex-col">
+<!-- Left Side: Visual Narrative -->
+
+<!-- Right Side: Auth Logic -->
+<div class="w-full flex flex-col items-center justify-center px-margin-mobile md:px-margin-desktop bg-surface-bright flex-grow pt-24">
+<div class="w-full max-w-md">
+<!-- Brand Anchor -->
+<div class="mb-stack-lg text-center lg:text-left flex items-center justify-center lg:justify-start gap-2">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span class="font-headline-lg text-headline-lg font-black text-primary tracking-tighter">MeetingHub</span>
+</div>
+<div class="mb-stack-lg">
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold mb-2">로그인</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">플랫폼에 접속하여 협업을 시작하세요.</p>
+</div>
+<!-- Social Logins (Pastel Tones Applied) -->
+<div class="grid grid-cols-2 gap-gutter mb-stack-lg">
+<button class="flex items-center justify-center gap-2 py-3 px-4 bg-primary-fixed border border-primary-container rounded-lg font-label-md text-label-md hover:bg-primary-container transition-all duration-200 text-on-primary-fixed">
+<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCitCeDz-D5pZuz1ofjb64twxRzvgPyLU6LEs27UipIewAjCLuuhh8lPIpgMpORkTBwcJJGxdH6_ZlN-t_3Y_JifpJOkQOzsibonAPpoT72ZFK0qg-uoKi0jN_1s5sziaDxn9rM4nQAlAxQeKqEeB7vbnP-9kK_gGwacoATkX4YcwefUit9mJPX6kWECoCxjoZLf1cr8ykweXZNr_GNG0fZ1WHFAPCGFHMcNWCbzvB4FdKfFLRILwlLRXEh9l031osCqShm8wrUqvxe">
+<span class="">Google</span>
+</button>
+<button class="flex items-center justify-center gap-2 py-3 px-4 bg-secondary-fixed text-on-secondary-fixed rounded-lg font-label-md text-label-md hover:bg-secondary-fixed-dim transition-all duration-200">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<span class="">Kakao</span>
+</button>
+</div>
+<!-- Divider -->
+<div class="flex items-center gap-stack-md mb-stack-lg">
+<div class="h-[1px] flex-grow bg-outline-variant"></div>
+<span class="font-label-sm text-label-sm text-outline">또는 이메일로 로그인</span>
+<div class="h-[1px] flex-grow bg-outline-variant"></div>
+</div>
+<!-- Email Login Form -->
+<form class="space-y-stack-md" onsubmit="return false;">
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-unit px-unit" for="email">이메일 주소</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">mail</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all font-body-md text-body-md outline-none" id="email" placeholder="example@meetinghub.ai" type="email">
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-unit px-unit">
+<label class="block font-label-sm text-label-sm text-on-surface-variant" for="password">비밀번호</label>
+<a class="font-label-sm text-label-sm text-primary hover:underline transition-all" href="#">비밀번호를 잊으셨나요?</a>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">lock</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all font-body-md text-body-md outline-none" id="password" placeholder="••••••••" type="password">
+</div>
+</div>
+<div class="flex items-center gap-2 mb-stack-md px-unit">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary" id="remember" type="checkbox">
+<label class="font-body-sm text-body-sm text-on-surface-variant select-none" for="remember">로그인 상태 유지</label>
+</div>
+<button class="w-full btn-primary-action py-4 text-white font-label-md text-label-md rounded-lg flex items-center justify-center gap-2">
+<span class="">로그인</span>
+<span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+</form>
+<!-- Footer Links -->
+<div class="mt-stack-lg text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                계정이 없으신가요? 
+                <a class="font-label-md text-label-md text-primary font-bold ml-1 hover:underline" href="#">회원가입</a>
+</p>
+</div>
+</div>
+<!-- Footer Policy -->
+<div class="mt-12 text-center lg:text-left w-full max-w-md">
+<p class="font-label-sm text-[10px] text-outline leading-normal">
+            MeetingHub 서비스 이용 시 <span class="underline">이용약관</span> 및 <span class="underline">개인정보 처리방침</span>에 동의하는 것으로 간주됩니다. <br>
+            © 2024 MeetingHub Inc. All rights reserved.
+        </p>
+</div>
+<footer class="py-24 bg-surface-container-low border-t border-outline-variant w-full mt-20"><div class="grid grid-cols-1 md:grid-cols-4 gap-stack-lg px-margin-desktop"><div class="md:col-span-1"><div class="flex items-center gap-2 mb-stack-md"><span class="material-symbols-outlined text-primary text-2xl icon-fill">meeting_room</span><span class="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">MeetingHub</span></div><p class="text-on-surface-variant font-body-sm text-body-sm leading-relaxed mb-stack-lg">모던 워크플레이스를 위한 최적의 회의 협업 솔루션. 더 스마트하게 소통하세요.</p><div class="flex gap-stack-md"><a class="text-outline hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">share</span></a><a class="text-outline hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">chat</span></a><a class="text-outline hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">language</span></a></div></div><div><h4 class="font-label-md text-label-md font-bold mb-stack-md text-on-surface uppercase tracking-widest">기능</h4><ul class="space-y-2"><li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">스마트 요약</a></li><li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">일정 관리</a></li><li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">연동 서비스</a></li></ul></div><div><h4 class="font-label-md text-label-md font-bold mb-stack-md text-on-surface uppercase tracking-widest">지원</h4><ul class="space-y-2"><li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">도움말 센터</a></li><li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">커뮤니티</a></li><li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">문의하기</a></li></ul></div><div><h4 class="font-label-md text-label-md font-bold mb-stack-md text-on-surface uppercase tracking-widest">법적 고지</h4><ul class="space-y-2"><li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">개인정보 처리방침</a></li><li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">서비스 약관</a></li><li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">보안 안내</a></li></ul></div></div><div class="mt-20 pt-8 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-stack-md px-margin-desktop"><p class="font-label-sm text-label-sm text-outline">© 2024 MeetingHub Collaboration Systems Inc.</p><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-secondary shadow-sm shadow-secondary/50"></span><span class="font-label-sm text-label-sm text-on-surface-variant">시스템 상태: 정상</span></div></div></footer></div>
+<script>
+    // Micro-interactions for buttons
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(btn => {
+        btn.addEventListener('mousedown', () => {
+            btn.classList.add('scale-95');
+        });
+        btn.addEventListener('mouseup', () => {
+            btn.classList.remove('scale-95');
+        });
+        btn.addEventListener('mouseleave', () => {
+            btn.classList.remove('scale-95');
+        });
+    });
+</script>
+
+
+
+
+
+
+
+
+</body></html>

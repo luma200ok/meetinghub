@@ -1,0 +1,525 @@
+<!DOCTYPE html><html class="light" lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>조직 및 구성원 관리 (관리자용) | MeetingHub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        :root {
+            --primary: #1c648e;
+            --secondary: #3b665b;
+            --tertiary: #5c5d6e;
+        }
+        body {
+            font-family: 'Hanken Grotesk', 'Malgun Gothic', sans-serif;
+            background-color: #f9f9ff;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .ai-sparkle-border {
+            position: relative;
+        }
+        .ai-sparkle-border::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: inherit;
+            padding: 2px;
+            background: linear-gradient(135deg, #7cb9e8, #e0b0ff, #98ffed);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 20px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
+        }
+        .org-node {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .org-node:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(28, 100, 142, 0.1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#444655",
+                      "inverse-on-surface": "#ebf1ff",
+                      "on-primary-container": "#00496d",
+                      "surface": "#f9f9ff",
+                      "tertiary-fixed": "#e1e1f5",
+                      "primary": "#1c648e",
+                      "secondary-fixed-dim": "#a2d0c2",
+                      "on-primary": "#ffffff",
+                      "surface-variant": "#d8e3fa",
+                      "tertiary-fixed-dim": "#c5c5d8",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-tint": "#1c648e",
+                      "surface-bright": "#f9f9ff",
+                      "surface-container": "#e7eeff",
+                      "on-error": "#ffffff",
+                      "primary-fixed-dim": "#90cdfd",
+                      "primary-container": "#7cb9e8",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#bdecde",
+                      "inverse-surface": "#263142",
+                      "secondary-container": "#bae9db",
+                      "tertiary-container": "#b1b1c4",
+                      "tertiary": "#5c5d6e",
+                      "outline-variant": "#c0c7cf",
+                      "primary-fixed": "#cae6ff",
+                      "secondary": "#3b665b",
+                      "on-primary-fixed-variant": "#004b70",
+                      "on-primary-fixed": "#001e30",
+                      "error": "#ba1a1a",
+                      "surface-container-highest": "#d8e3fa",
+                      "on-tertiary-container": "#424453",
+                      "on-surface": "#111c2c",
+                      "on-secondary-container": "#3f6b60",
+                      "on-background": "#111c2c",
+                      "on-secondary-fixed": "#00201a",
+                      "on-tertiary-fixed": "#191b29",
+                      "surface-dim": "#cfdaf1",
+                      "surface-container-high": "#dee8ff",
+                      "background": "#f9f9ff",
+                      "inverse-primary": "#90cdfd",
+                      "on-error-container": "#93000a",
+                      "outline": "#71787f",
+                      "on-surface-variant": "#41484e",
+                      "surface-container-low": "#f0f3ff",
+                      "on-secondary-fixed-variant": "#224e44"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "container-max-width": "1440px",
+                      "stack-lg": "32px",
+                      "stack-sm": "8px",
+                      "stack-md": "16px",
+                      "unit": "4px",
+                      "margin-desktop": "48px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": ["Hanken Grotesk"],
+                      "label-sm": ["Hanken Grotesk"],
+                      "headline-xl": ["Hanken Grotesk"],
+                      "headline-md": ["Hanken Grotesk"],
+                      "label-md": ["Hanken Grotesk"],
+                      "headline-lg": ["Hanken Grotesk"],
+                      "body-sm": ["Hanken Grotesk"],
+                      "body-md": ["Hanken Grotesk"],
+                      "body-lg": ["Hanken Grotesk"]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "14px", "fontWeight": "700"}],
+                      "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-surface selection:bg-primary-container selection:text-on-primary-container h-screen overflow-hidden">
+<!-- SideNavBar (Admin version) -->
+<nav class="h-screen w-64 fixed left-0 top-0 border-r border-outline-variant bg-surface flex flex-col py-8 px-6 z-50">
+<div class="mb-10 px-2 flex items-center space-x-2">
+<span class="material-symbols-outlined text-primary text-[32px]" style="font-variation-settings: 'FILL' 1;">hub</span>
+<span class="font-headline-md text-headline-md font-black text-primary tracking-tight">MeetingHub</span>
+</div>
+<div class="space-y-1.5 flex-grow">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary">dashboard</span>
+<span class="font-label-md text-label-md">대시보드</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary">calendar_month</span>
+<span class="font-label-md text-label-md">캘린더</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary">forum</span>
+<span class="font-label-md text-label-md">회의실 예약</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary">description</span>
+<span class="font-label-md text-label-md">AI 회의록</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary">assignment</span>
+<span class="font-label-md text-label-md">워크플로우</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary-container text-on-primary-container font-semibold shadow-sm transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined">corporate_fare</span>
+<span class="font-label-md text-label-md">기업·조직 관리</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary">monitoring</span>
+<span class="font-label-md text-label-md">통계</span>
+</a>
+</div>
+<div class="pt-6 border-t border-outline-variant space-y-1.5">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">설정</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined">help_center</span>
+<span class="font-label-md text-label-md">도움말</span>
+</a>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant flex justify-between items-center px-10 z-40"><div class="flex items-center gap-8 flex-1"><div class="relative w-full max-w-md"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span><input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm text-on-surface placeholder:text-on-surface-variant/50 transition-all" placeholder="회의록, 리포트, 팀원 검색..." type="text"></div></div><div class="flex items-center gap-6"><div class="flex items-center gap-3"><button class="px-4 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold hover:bg-primary/20 transition-all">AI 채팅</button><div class="flex items-center gap-1"><button class="p-2 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">notifications</span></button><button class="p-2 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">history</span></button></div></div><div class="h-8 w-[1px] bg-outline-variant"></div><button class="flex items-center gap-3 group"><div class="w-9 h-9 rounded-full overflow-hidden bg-surface-container-highest border border-outline-variant transition-transform group-hover:scale-105"><img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTyxNbtW0m31PPxE-WLF7CI5U7rFj_3Rj794hxS3OUQt-P5byj9uddh1D5tHcZKXYBMlBz2kn8lZj-9ZhfzqQQWltPRqoa2PJ5y-t_SRJQFk5CEuORbkegATF3tw5_zOuxsDEzSu12gczdtSnV4V1ik3w5GlmIFVNpW_1K10CBAtHHxwjfk3EFToXijUJj7Dt_U5pzRfqjT-LnrReyIIj8PiXbksmbHvqlphppI5d0N80mVJDkNdm6_jKj5Yx62pOxwjRz77XqhBdZ"></div><div class="text-left hidden lg:block"><span class="text-sm font-semibold text-on-surface block leading-none">마커스 첸</span><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tight">팀 리더</span></div></button></div></header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-28 px-margin-desktop min-h-screen h-full overflow-y-auto" style="padding-bottom: 0;">
+<div class="max-w-container-max-width mx-auto space-y-gutter">
+<!-- Page Header -->
+<div class="flex justify-between items-center">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-background tracking-tight">조직 및 구성원 관리 (관리자용)</h2>
+<p class="text-on-surface-variant font-body-md text-body-md mt-1.5 opacity-80">전체 기업 조직도와 멤버 현황을 관리하고 초대할 수 있습니다.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-3 rounded-xl border-2 border-outline-variant text-on-surface font-label-md text-label-md hover:bg-white hover:border-primary transition-all flex items-center gap-2">
+<span class="material-symbols-outlined">cloud_download</span>
+                    내보내기
+                </button>
+<button class="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-md text-label-md hover:shadow-xl hover:shadow-primary/20 transition-all flex items-center gap-2 transform active:scale-95">
+<span class="material-symbols-outlined">person_add</span>
+                    멤버 초대
+                </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Org Chart Section -->
+<section class="col-span-12 lg:col-span-8 space-y-5">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md flex items-center gap-3">
+                        조직도 뷰
+                        <span class="px-3 py-1 bg-tertiary-container text-on-tertiary-container rounded-full text-[10px] font-bold uppercase tracking-widest">Visual</span>
+</h3>
+<div class="flex items-center gap-2.5 text-label-sm text-on-surface-variant bg-white/50 border border-white px-4 py-2 rounded-full shadow-sm">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+</span>
+                        라이브 동기화
+                    </div>
+</div>
+<div class="h-[460px] w-full bg-white border border-outline-variant rounded-[2rem] overflow-hidden relative p-10 flex flex-col items-center shadow-sm">
+<div class="absolute inset-0 opacity-[0.04] pointer-events-none" style="background-image: radial-gradient(#1c648e 1px, transparent 1px); background-size: 32px 32px;"></div>
+<!-- Root Node -->
+<div class="org-node glass-panel p-5 rounded-2xl w-56 text-center border-t-4 border-t-primary z-10 relative shadow-md">
+<p class="font-label-sm text-label-sm text-primary font-bold uppercase mb-1.5 tracking-wider">Executive</p>
+<p class="font-label-md text-label-md font-extrabold text-on-background">MeetingHub 본부</p>
+<div class="absolute -bottom-10 left-1/2 w-[2px] h-10 bg-gradient-to-b from-primary/30 to-outline-variant"></div>
+</div>
+<!-- Level 2 Connector -->
+<div class="w-[65%] h-[2px] bg-outline-variant mt-10 relative">
+<div class="absolute top-0 left-0 w-[2px] h-10 bg-outline-variant"></div>
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-10 bg-outline-variant"></div>
+<div class="absolute top-0 right-0 w-[2px] h-10 bg-outline-variant"></div>
+</div>
+<!-- Level 2 Nodes -->
+<div class="flex justify-between w-[90%] mt-10 gap-6">
+<div class="org-node glass-panel p-5 rounded-2xl flex-1 text-center group cursor-pointer hover:ai-sparkle-border">
+<p class="font-label-sm text-label-sm text-on-surface-variant/60 font-bold uppercase mb-1.5 tracking-wider">Development</p>
+<p class="font-label-md text-label-md font-bold">서비스 엔진팀</p>
+<div class="mt-4 flex -space-x-3 justify-center">
+<img alt="A1" class="w-8 h-8 rounded-full border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAixHCFaalCprAK6UdZpTklNZAWXtw658-mJdulsCJe2_Dr6aRAfWhMkEIGGybZldcHgxYUB94A5fN8Vz1bs5x6Pboiij8cjnQxFbDmy6V-WWlJe_Y0S8piFOpIwyTXVTtdgMeakK0y4_cf3aAYHsLwWENqvJ8j6H2zHwkj-KBpxdlbpcF0aOk41v5N8W7Q3zOilUZ4WUQSUtJTrg59rdwypmopeQpu9oHr4yL5dY5b5yvaUH2deKXVOzsBJmyXE8Lk4y4_AFch1ZdA">
+<img alt="A2" class="w-8 h-8 rounded-full border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCNpZnaT_bsQbtdnCg_MjEtJQr3dFZDcu_Xac9UewBu_C4iMi4xX-K6Hqmlj97BwLnRsqdDHmF3ALRzx65fXBLn6hBeA6P9vLn3HdvNXUwNbHXJWnrlu4wx2V0BqvuKLvnsTJFCICHNwyQA_HsvpEUybFAhI4CGbOgcpd6vr3y7VAhHbAr_eTMeAej7yXM7yyozMItJuWwQuFijr_MOBTHHrpPqGMM6LYnXT_pI4IscqvaXDlw5_RJCjnwBCoxqVsTNzJ8UG6HHuh6">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container text-[11px] font-bold flex items-center justify-center border-2 border-white shadow-sm">+14</div>
+</div>
+</div>
+<div class="org-node glass-panel p-5 rounded-2xl flex-1 text-center group cursor-pointer hover:ai-sparkle-border">
+<p class="font-label-sm text-label-sm text-on-surface-variant/60 font-bold uppercase mb-1.5 tracking-wider">Product</p>
+<p class="font-label-md text-label-md font-bold">기획 및 UX팀</p>
+<div class="mt-4 flex -space-x-3 justify-center">
+<img alt="A3" class="w-8 h-8 rounded-full border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQNPtaxF4U-U8_JkDzBh05C4m4X1yNiNEcZAd-Jn6uQt5Uw3Oratyjl2YxmUlqrJnzQWZ3dHkPCM0V8T3PwBVoSFGAVyAdAkWc1SG4WsuYwQNeB8lbIxKhbUI0qOuPfGGNeMewHV4i3p4Om696w2n_d_y1aQpRtJGLQjps9z7kxAdxS99u9IjCg8Dx5IJuTCZ2Iar135C9sBa6n6Z8xE4xiokeDHoWiTbE6tFl5v5NpvnRWPfBf0hk9-uhkPgjPI_FMTNRYOsh-VGk">
+<div class="w-8 h-8 rounded-full bg-tertiary-container text-on-tertiary-container text-[11px] font-bold flex items-center justify-center border-2 border-white shadow-sm">+8</div>
+</div>
+</div>
+<div class="org-node glass-panel p-5 rounded-2xl flex-1 text-center group cursor-pointer hover:ai-sparkle-border">
+<p class="font-label-sm text-label-sm text-on-surface-variant/60 font-bold uppercase mb-1.5 tracking-wider">Growth</p>
+<p class="font-label-md text-label-md font-bold">마케팅 센터</p>
+<div class="mt-4 flex -space-x-3 justify-center">
+<img alt="A4" class="w-8 h-8 rounded-full border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBi7nlnxXk0GmmbueLDnusJGDuZkUFgCz88C_thewh55LgxtCGuzIbpaIyM1VxKDN6ujnkxh1HYiy2oTL1yALXfgSrbkLAhsdnr4yv0QfyDOuVmmzgNzk1AbraW1YqAeagWyJc0jdu7X4lNXKg9QNTOumLNUYYwwDeAd24UDNcZvuFSUUBk-oZRfjK4H4mpE4WqewjyogMiqg8rmaVLE8nq7ZVIPn8yZSOEucnKFK2Mq-S38Z5-yS8LUNo2NGpvooCy9TGeHc4vCuVa">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container text-[11px] font-bold flex items-center justify-center border-2 border-white shadow-sm">+5</div>
+</div>
+</div>
+</div>
+<div class="absolute bottom-8 right-10 flex items-center gap-3">
+<button class="w-10 h-10 rounded-xl glass-panel flex items-center justify-center text-on-surface-variant hover:bg-primary-container hover:text-primary transition-all shadow-sm">
+<span class="material-symbols-outlined">zoom_in</span>
+</button>
+<button class="w-10 h-10 rounded-xl glass-panel flex items-center justify-center text-on-surface-variant hover:bg-primary-container hover:text-primary transition-all shadow-sm">
+<span class="material-symbols-outlined">zoom_out</span>
+</button>
+<button class="w-10 h-10 rounded-xl glass-panel flex items-center justify-center text-on-surface-variant hover:bg-primary-container hover:text-primary transition-all shadow-sm">
+<span class="material-symbols-outlined">center_focus_strong</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Department List -->
+<section class="col-span-12 lg:col-span-4 space-y-5">
+<h3 class="font-headline-md text-headline-md">부서 리스트</h3>
+<div class="bg-surface-container-low border border-outline-variant rounded-[2rem] p-6 space-y-4">
+<div class="space-y-3">
+<div class="flex items-center justify-between p-4 bg-white border border-outline-variant rounded-xl group hover:shadow-md transition-all cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">terminal</span>
+</div>
+<div>
+<p class="font-label-md text-label-md font-bold">개발본부</p>
+<p class="text-xs text-on-surface-variant/70">14명 참여 중</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-white border border-outline-variant rounded-xl group hover:shadow-md transition-all cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-tertiary-container flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined">auto_awesome_motion</span>
+</div>
+<div>
+<p class="font-label-md text-label-md font-bold">프로덕트팀</p>
+<p class="text-xs text-on-surface-variant/70">8명 참여 중</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-white border border-outline-variant rounded-xl group hover:shadow-md transition-all cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined">rocket_launch</span>
+</div>
+<div>
+<p class="font-label-md text-label-md font-bold">성장센터</p>
+<p class="text-xs text-on-surface-variant/70">5명 참여 중</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+</div>
+<button class="w-full py-4 rounded-xl border-2 border-dashed border-outline-variant text-on-surface-variant font-label-md text-label-md hover:border-primary hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2 group">
+<span class="material-symbols-outlined transition-transform group-hover:scale-110">add_circle</span>
+                        부서 새로 만들기
+                    </button>
+</div>
+</section>
+<!-- Member List Table Section -->
+<section class="col-span-12 space-y-gutter pt-4">
+<div class="flex items-center justify-between border-b border-outline-variant">
+<div class="flex gap-8">
+<button class="pb-3 border-b-4 border-primary text-on-background font-bold text-label-md px-1">전체 멤버 (42)</button>
+<button class="pb-3 border-b-4 border-transparent text-on-surface-variant font-label-md px-1 hover:text-primary transition-all">초대 히스토리</button>
+<button class="pb-3 border-b-4 border-transparent text-on-surface-variant font-label-md px-1 hover:text-primary transition-all">대기 멤버</button>
+</div>
+<div class="flex items-center gap-3 mb-3">
+<div class="relative">
+<button class="px-4 py-2 rounded-xl border border-outline-variant text-on-surface-variant font-label-md flex items-center gap-2 hover:bg-white transition-all">
+<span class="material-symbols-outlined text-[18px]">filter_alt</span>
+                                필터
+                            </button>
+</div>
+<button class="p-2 rounded-xl border border-outline-variant text-on-surface-variant hover:bg-white transition-all">
+<span class="material-symbols-outlined text-[18px]">grid_view</span>
+</button>
+</div>
+</div>
+<div class="bg-white border border-outline-variant rounded-[2rem] overflow-hidden shadow-sm">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-8 py-5 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">이름 / 이메일</th>
+<th class="px-8 py-5 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">직함</th>
+<th class="px-8 py-5 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">소속</th>
+<th class="px-8 py-5 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">활동 상태</th>
+<th class="px-8 py-5 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider text-right">설정</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-primary-container/10 transition-colors group cursor-pointer">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img alt="S" class="w-10 h-10 rounded-xl object-cover bg-surface-container-highest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeM9a_ZZV4E7bZ9v2msS8KRQI2lgaOcNnEPAdWGLl2D5c9HxJoU6TF_0MvYs0FK5SZ99gwhvjLBlPmEiFELNOguq6yQlFqAQlE8IaT5ax49UjL1nxKJZIusUhX3fKH4TY_xMGBnRtKIwhtm23-TCjWI1j9wOrRRscbA0Cu3fEiRjqhicqoRjjGXEStB6iFdjgW4kGB2hYEhaAN8Oq33PEcssg3PbtduVu_woHQA3xO5iwZaWu2dfGhABjRSiIlhwD7qlmTrRtDK98c">
+<div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+</div>
+<div>
+<p class="font-label-md text-label-md font-extrabold text-on-background">Sarah Chen</p>
+<p class="text-xs text-on-surface-variant/70">sarah.c@meetinghub.ai</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="text-on-surface font-body-sm text-body-sm font-medium">시니어 아키텍트</span>
+</td>
+<td class="px-8 py-5">
+<span class="px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-label-sm text-[11px] font-bold uppercase tracking-wide">개발본부</span>
+</td>
+<td class="px-8 py-5">
+<div class="flex items-center gap-2 text-green-600 font-label-md text-label-md">
+<span class="w-2 h-2 rounded-full bg-current shadow-[0_0_8px_rgba(34,197,94,0.4)]"></span>
+                                        활성 상태
+                                    </div>
+</td>
+<td class="px-8 py-5 text-right">
+<button class="p-2 rounded-xl hover:bg-surface-container-highest text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">settings_suggest</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-primary-container/10 transition-colors group cursor-pointer">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img alt="M" class="w-10 h-10 rounded-xl object-cover bg-surface-container-highest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtxwQuF65fiGlAi7tWQ3b3gNeW3nBaT_Vs--o_i9IHrswX5c2U7jqxlBqtKDB4BxLcOAtHayM-kr-ygwHeV-1_A-530yf0CbkbMG6fkBjEMbeXqyP8Dul7zH4LhG9OyPaw5mTL9yBuW5CGeq26FtLXpg2WWJyFmc9zv6jZiBSXti7VvIlUnZq1V2DtL0HovTgSVE1HyPrQd8MFYguuxcOKeXCCfKY5IwWeee3Re9BHRfJrbuT8N04K1azc7VpoJ_ppBrkTgj61pKK3">
+<div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-amber-500 border-2 border-white rounded-full"></div>
+</div>
+<div>
+<p class="font-label-md text-label-md font-extrabold text-on-background">Marcus Thorne</p>
+<p class="text-xs text-on-surface-variant/70">m.thorne@meetinghub.ai</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="text-on-surface font-body-sm text-body-sm font-medium">프로덕트 매니저</span>
+</td>
+<td class="px-8 py-5">
+<span class="px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container font-label-sm text-[11px] font-bold uppercase tracking-wide">프로덕트팀</span>
+</td>
+<td class="px-8 py-5">
+<div class="flex items-center gap-2 text-amber-600 font-label-md text-label-md">
+<span class="w-2 h-2 rounded-full bg-current"></span>
+                                        초대 대기중
+                                    </div>
+</td>
+<td class="px-8 py-5 text-right">
+<button class="px-4 py-1.5 rounded-full border border-primary text-primary font-label-sm text-[12px] hover:bg-primary hover:text-white transition-all">재전송</button>
+</td>
+</tr>
+<tr class="hover:bg-primary-container/10 transition-colors group cursor-pointer">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img alt="E" class="w-10 h-10 rounded-xl object-cover bg-surface-container-highest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGblefwkM4t5HNkAu_sVL8hneuQaxJpL8EG0ukEa8L-b8YDSLqTjEuSfGv7tgT_uKMzayq1lWmfnKP2N-5YIbBDF8RG-tBKoxmgIVzKEzcldCXbiExQz3GmrjijDDYTmhnFfcupUL_zh1fP9NxWOCF_cFK3qkGsIbyAs3eCyM5Tp0yhq4NSKbgUFOEj0StkRB7hMAw6edeiYFMBvbnpWP03yr6Jzy_2Lya_q-BvFPMW9rn4AAQAPrZVk5JKrA9XzvMIVCAxxsSdrS6">
+<div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+</div>
+<div>
+<p class="font-label-md text-label-md font-extrabold text-on-background">Elena Rodriguez</p>
+<p class="text-xs text-on-surface-variant/70">elena.r@meetinghub.ai</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="text-on-surface font-body-sm text-body-sm font-medium">데이터 분석가</span>
+</td>
+<td class="px-8 py-5">
+<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-[11px] font-bold uppercase tracking-wide">성장센터</span>
+</td>
+<td class="px-8 py-5">
+<div class="flex items-center gap-2 text-green-600 font-label-md text-label-md">
+<span class="w-2 h-2 rounded-full bg-current shadow-[0_0_8px_rgba(34,197,94,0.4)]"></span>
+                                        활성 상태
+                                    </div>
+</td>
+<td class="px-8 py-5 text-right">
+<button class="p-2 rounded-xl hover:bg-surface-container-highest text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">settings_suggest</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination -->
+<div class="px-10 py-6 bg-surface-container-low flex justify-between items-center">
+<p class="text-on-surface-variant font-body-sm text-body-sm opacity-70">총 42명 중 1-10 표시 중</p>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-xl border border-outline-variant disabled:opacity-30 hover:bg-white transition-all">
+<span class="material-symbols-outlined text-[20px]">keyboard_arrow_left</span>
+</button>
+<button class="w-10 h-10 rounded-xl bg-primary text-on-primary font-bold shadow-md shadow-primary/20">1</button>
+<button class="w-10 h-10 rounded-xl hover:bg-white text-on-surface-variant font-bold transition-all">2</button>
+<button class="w-10 h-10 rounded-xl hover:bg-white text-on-surface-variant font-bold transition-all">3</button>
+<button class="p-2 rounded-xl border border-outline-variant hover:bg-white transition-all">
+<span class="material-symbols-outlined text-[20px]">keyboard_arrow_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<script>
+    function toggleModal() {
+        const modal = document.getElementById('modal-backdrop');
+        if(modal) {
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+    }
+
+    document.querySelectorAll('.org-node').forEach(node => {
+        node.addEventListener('mousedown', () => {
+            node.style.transform = 'scale(0.96)';
+        });
+        node.addEventListener('mouseup', () => {
+            node.style.transform = 'translateY(-4px) scale(1.02)';
+        });
+    });
+
+    console.log("MeetingHub Admin Organizational Management View Initialized");
+</script>
+
+
+
+
+
+
+
+
+
+
+</body></html>

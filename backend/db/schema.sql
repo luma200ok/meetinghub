@@ -67,8 +67,10 @@ create table meeting_rooms (
 );
 
 -- 회의 예약
+-- company_id: 멀티테넌트 직접 격리용 (예약 생성 시 회의실의 company_id를 함께 저장)
 create table meeting_reservations (
   id           uuid primary key default gen_random_uuid(),
+  company_id   uuid references companies(id),
   room_id      uuid references meeting_rooms(id),
   title        text not null,
   start_at     timestamptz not null,
@@ -77,6 +79,7 @@ create table meeting_reservations (
   organizer_id uuid references users(id),
   created_at   timestamptz default now()
 );
+create index idx_meeting_reservations_company on meeting_reservations(company_id);
 
 -- 참석자
 create table reservation_attendees (
@@ -86,13 +89,16 @@ create table reservation_attendees (
 );
 
 -- 회의록
+-- company_id: 멀티테넌트 직접 격리용 (회의록 생성 시 예약의 company_id를 함께 저장)
 create table meeting_minutes (
   id             uuid primary key default gen_random_uuid(),
+  company_id     uuid references companies(id),
   reservation_id uuid references meeting_reservations(id),
   content        text,
   created_by     uuid references users(id),
   created_at     timestamptz default now()
 );
+create index idx_meeting_minutes_company on meeting_minutes(company_id);
 
 -- AI 분석 결과
 create table ai_summaries (
@@ -106,8 +112,10 @@ create table ai_summaries (
 );
 
 -- 업무 (Action Item)
+-- company_id: 멀티테넌트 직접 격리용 (생성 시 회의록의 company_id를 함께 저장)
 create table action_items (
   id          uuid primary key default gen_random_uuid(),
+  company_id  uuid references companies(id),
   minute_id   uuid references meeting_minutes(id),
   assignee_id uuid references users(id),
   task        text not null,
@@ -115,6 +123,7 @@ create table action_items (
   status      text not null default 'TODO',  -- TODO | IN_PROGRESS | DONE | BLOCKED
   created_at  timestamptz default now()
 );
+create index idx_action_items_company on action_items(company_id);
 
 -- 알림
 create table notifications (
