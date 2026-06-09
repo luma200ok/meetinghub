@@ -8,6 +8,7 @@ from app.repositories.auth_repository import (
     CompanyMemberRepository,
     InvitationRepository,
     UserRepository,
+    authenticate_auth_user,
     create_auth_user,
 )
 
@@ -42,6 +43,9 @@ class AuthService:
         }
 
     def accept_invite(self, token: str, password: str) -> dict:
+        if not password:
+            raise ValueError('비밀번호는 필수입니다.')
+
         invitations = InvitationRepository()
         invitation = invitations.find_by_token(token)
         if invitation is None:
@@ -62,6 +66,9 @@ class AuthService:
             if user is None:
                 raise ValueError('초대 수락 계정 생성에 실패했습니다.')
             profile = users.upsert_profile(user.id, email)
+            session = self._serialize_session(getattr(auth_response, 'session', None))
+        else:
+            auth_response = self._verify_existing_user(email, password, profile['id'])
             session = self._serialize_session(getattr(auth_response, 'session', None))
 
         member = CompanyMemberRepository().add_member(
@@ -95,6 +102,17 @@ class AuthService:
             return False
         parsed = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
         return datetime.now(timezone.utc) - parsed > self.invitation_ttl
+
+    def _verify_existing_user(self, email: str, password: str, profile_id: str):
+        try:
+            auth_response = authenticate_auth_user(email, password)
+        except Exception as exc:
+            raise PermissionError('초대 수락을 위해 기존 계정 비밀번호 확인이 필요합니다.') from exc
+
+        user = getattr(auth_response, 'user', None)
+        if user is None or getattr(user, 'id', None) != profile_id:
+            raise PermissionError('초대 수락을 위해 기존 계정 비밀번호 확인이 필요합니다.')
+        return auth_response
 
     def _serialize_session(self, session) -> dict | None:
         if session is None:

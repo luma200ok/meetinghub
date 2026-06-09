@@ -1,0 +1,373 @@
+<!DOCTYPE html><html lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Nexus AI - 통계 및 분석</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body {
+            font-family: 'Hanken Grotesk', sans-serif;
+            background-color: #f9f9ff;
+            color: #111c2c;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .chart-bar {
+            transition: height 1s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#3f6b60",
+                        "inverse-on-surface": "#ebf1ff",
+                        "secondary": "#3b665b",
+                        "surface": "#f9f9ff",
+                        "outline-variant": "#c0c7cf",
+                        "on-secondary-fixed": "#00201a",
+                        "inverse-surface": "#263142",
+                        "secondary-fixed-dim": "#a2d0c2",
+                        "primary-fixed": "#cae6ff",
+                        "on-tertiary-container": "#424453",
+                        "on-primary-container": "#00496d",
+                        "tertiary": "#5c5d6e",
+                        "surface-container-highest": "#d8e3fa",
+                        "on-surface": "#111c2c",
+                        "inverse-primary": "#90cdfd",
+                        "tertiary-fixed": "#e1e1f5",
+                        "surface-container-high": "#dee8ff",
+                        "surface-bright": "#f9f9ff",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "surface-container": "#e7eeff",
+                        "on-secondary-fixed-variant": "#224e44",
+                        "background": "#f9f9ff",
+                        "on-surface-variant": "#41484e",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#444655",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#b1b1c4",
+                        "secondary-fixed": "#bdecde",
+                        "primary-container": "#7cb9e8",
+                        "primary": "#1c648e",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-background": "#111c2c",
+                        "surface-tint": "#1c648e",
+                        "surface-dim": "#cfdaf1",
+                        "secondary-container": "#bae9db",
+                        "primary-fixed-dim": "#90cdfd",
+                        "on-primary-fixed": "#001e30",
+                        "outline": "#71787f",
+                        "on-primary-fixed-variant": "#004b70",
+                        "surface-container-low": "#f0f3ff",
+                        "on-tertiary-fixed": "#191b29",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#c5c5d8",
+                        "surface-variant": "#d8e3fa"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "margin-mobile": "16px",
+                        "container-max-width": "1440px",
+                        "stack-md": "16px",
+                        "gutter": "24px",
+                        "margin-desktop": "48px",
+                        "stack-sm": "8px",
+                        "stack-lg": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "headline-xl": ["Hanken Grotesk"],
+                        "body-sm": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "label-md": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "14px", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r border-outline-variant bg-surface flex flex-col py-6 px-4 z-50">
+<div class="mb-10 px-2">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Enterprise AI</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Collaboration Suite</p>
+</div>
+<nav class="flex-grow space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="font-label-md text-label-md">Calendar</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-label-md text-label-md">AI Minutes</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-label-md text-label-md">Tasks</span>
+</a>
+<!-- Active Navigation: Admin -->
+<div class="space-y-1 mt-4">
+<p class="px-4 text-[10px] uppercase tracking-wider font-bold text-outline">Administration</p>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">corporate_fare</span>
+<span class="font-label-md text-label-md">기업·조직 관리</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary-container text-on-secondary-container font-semibold transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">통계</span>
+</a>
+</div>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant flex justify-between items-center px-10 z-40"><div class="flex items-center gap-8 flex-1"><div class="relative w-full max-w-md"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span><input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm text-on-surface placeholder:text-on-surface-variant/50 transition-all" placeholder="회의록, 리포트, 팀원 검색..." type="text"></div></div><div class="flex items-center gap-6"><div class="flex items-center gap-3"><button class="px-4 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold hover:bg-primary/20 transition-all">AI 채팅</button><div class="flex items-center gap-1"><button class="p-2 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">notifications</span></button><button class="p-2 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">history</span></button></div></div><div class="h-8 w-[1px] bg-outline-variant"></div><button class="flex items-center gap-3 group"><div class="w-9 h-9 rounded-full overflow-hidden bg-surface-container-highest border border-outline-variant transition-transform group-hover:scale-105"><img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTyxNbtW0m31PPxE-WLF7CI5U7rFj_3Rj794hxS3OUQt-P5byj9uddh1D5tHcZKXYBMlBz2kn8lZj-9ZhfzqQQWltPRqoa2PJ5y-t_SRJQFk5CEuORbkegATF3tw5_zOuxsDEzSu12gczdtSnV4V1ik3w5GlmIFVNpW_1K10CBAtHHxwjfk3EFToXijUJj7Dt_U5pzRfqjT-LnrReyIIj8PiXbksmbHvqlphppI5d0N80mVJDkNdm6_jKj5Yx62pOxwjRz77XqhBdZ"></div><div class="text-left hidden lg:block"><span class="text-sm font-semibold text-on-surface block leading-none">마커스 첸</span><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tight">팀 리더</span></div></button></div></header>
+<!-- Main Content -->
+<main class="ml-64 pt-24 min-h-[calc(100vh-64px)] overflow-y-auto h-full">
+<div class="max-w-container-max-width mx-auto px-margin-desktop">
+<!-- Page Header -->
+<div class="mb-stack-lg flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">통계 및 분석</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">시스템 전반의 실시간 지표 및 사용자 활동 보고서입니다.</p>
+</div>
+<div class="flex gap-stack-sm">
+<button class="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]">download</span> 리포트 내보내기
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md hover:bg-opacity-80 transition-colors">
+<span class="material-symbols-outlined text-[20px]">refresh</span> 데이터 갱신
+                    </button>
+</div>
+</div>
+<!-- Dashboard Bento Grid -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Main Traffic Chart Section (Large) -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-xl p-stack-lg shadow-sm animate-fade-in" style="animation-delay: 0.1s;">
+<div class="flex justify-between items-start mb-stack-lg">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">트래픽 분석 및 가용성</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">글로벌 서버 네트워크 트래픽 및 가동 시간</p>
+</div>
+<div class="flex bg-surface-container-low p-1 rounded-lg">
+<button class="px-4 py-1.5 rounded-md font-label-sm text-label-sm bg-surface-container-lowest shadow-sm text-primary">1시간</button>
+<button class="px-4 py-1.5 rounded-md font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface">24시간</button>
+<button class="px-4 py-1.5 rounded-md font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface">7일</button>
+</div>
+</div>
+<!-- Chart Mockup -->
+<div class="h-64 flex items-end justify-between gap-2 px-4 mb-stack-lg relative">
+<!-- Horizontal Grid Lines -->
+<div class="absolute inset-x-0 bottom-0 h-full flex flex-col justify-between pointer-events-none opacity-20">
+<div class="border-b border-outline"></div>
+<div class="border-b border-outline"></div>
+<div class="border-b border-outline"></div>
+<div class="border-b border-outline"></div>
+</div>
+<!-- Bars -->
+<div class="flex-1 bg-primary-container rounded-t-lg chart-bar hover:bg-primary transition-colors cursor-pointer" style="height: 60%;"></div>
+<div class="flex-1 bg-primary-container rounded-t-lg chart-bar hover:bg-primary transition-colors cursor-pointer" style="height: 75%;"></div>
+<div class="flex-1 bg-primary-container rounded-t-lg chart-bar hover:bg-primary transition-colors cursor-pointer" style="height: 45%;"></div>
+<div class="flex-1 bg-primary-container rounded-t-lg chart-bar hover:bg-primary transition-colors cursor-pointer" style="height: 90%;"></div>
+<div class="flex-1 bg-primary-container rounded-t-lg chart-bar hover:bg-primary transition-colors cursor-pointer" style="height: 65%;"></div>
+<div class="flex-1 bg-primary-container rounded-t-lg chart-bar hover:bg-primary transition-colors cursor-pointer" style="height: 80%;"></div>
+<div class="flex-1 bg-primary-container rounded-t-lg chart-bar hover:bg-primary transition-colors cursor-pointer" style="height: 55%;"></div>
+<div class="flex-1 bg-primary-container rounded-t-lg chart-bar hover:bg-primary transition-colors cursor-pointer" style="height: 70%;"></div>
+<div class="flex-1 bg-primary-container rounded-t-lg chart-bar hover:bg-primary transition-colors cursor-pointer" style="height: 85%;"></div>
+<div class="flex-1 bg-primary-container rounded-t-lg chart-bar hover:bg-primary transition-colors cursor-pointer" style="height: 40%;"></div>
+<div class="flex-1 bg-primary-container rounded-t-lg chart-bar hover:bg-primary transition-colors cursor-pointer" style="height: 60%;"></div>
+<div class="flex-1 bg-primary-container rounded-t-lg chart-bar hover:bg-primary transition-colors cursor-pointer" style="height: 95%;"></div>
+</div>
+<!-- Key Metrics Grid -->
+<div class="grid grid-cols-4 gap-4 mt-8 pt-8 border-t border-outline-variant">
+<div class="text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1">총 트래픽</p>
+<p class="font-headline-md text-headline-md text-primary">14.2 TB</p>
+<span class="text-[11px] text-on-secondary-container font-bold">↑ 2.4%</span>
+</div>
+<div class="text-center border-x border-outline-variant">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1">활성 사용자</p>
+<p class="font-headline-md text-headline-md text-primary">2,481명</p>
+<span class="text-[11px] text-on-secondary-container font-bold">↑ 12명</span>
+</div>
+<div class="text-center border-r border-outline-variant">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1">네트워크 지연</p>
+<p class="font-headline-md text-headline-md text-primary">12ms</p>
+<span class="text-[11px] text-on-secondary-container font-bold">Stable</span>
+</div>
+<div class="text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1">시스템 에러</p>
+<p class="font-headline-md text-headline-md text-error">0.02%</p>
+<span class="text-[11px] text-error font-bold">↓ 0.01%</span>
+</div>
+</div>
+</div>
+<!-- User Growth Card (Small) -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-xl p-stack-lg shadow-sm animate-fade-in" style="animation-delay: 0.2s;">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-label-md text-label-md text-on-surface uppercase tracking-wide">User Growth</h3>
+<span class="material-symbols-outlined text-primary">group_add</span>
+</div>
+<div class="relative h-48 flex items-center justify-center">
+<div class="absolute inset-0 bg-secondary-container opacity-10 rounded-full blur-3xl"></div>
+<div class="text-center z-10">
+<p class="font-headline-xl text-headline-xl text-on-surface">+18.5%</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2">이번 달 신규 등록 사용자</p>
+</div>
+</div>
+<div class="mt-6 space-y-3">
+<div class="flex justify-between items-center text-body-sm">
+<span class="text-on-surface-variant">Premium Plan</span>
+<span class="font-bold text-on-surface">64%</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 64%"></div>
+</div>
+<div class="flex justify-between items-center text-body-sm">
+<span class="text-on-surface-variant">Standard Plan</span>
+<span class="font-bold text-on-surface">36%</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 36%"></div>
+</div>
+</div>
+</div>
+<!-- Resource Usage (Asymmetric) -->
+<div class="col-span-12 lg:col-span-5 bg-surface-container-lowest rounded-xl p-stack-lg shadow-sm animate-fade-in" style="animation-delay: 0.3s;">
+<h3 class="font-label-md text-label-md text-on-surface uppercase tracking-wide mb-6">Resource Usage</h3>
+<div class="grid grid-cols-2 gap-stack-lg">
+<div class="bg-surface-container-low p-4 rounded-xl border border-white">
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-2">GPU Acceleration</p>
+<div class="flex items-end gap-2">
+<span class="font-headline-md text-headline-md">72%</span>
+<span class="text-error text-[10px] pb-1">High</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-white">
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-2">Storage Occupancy</p>
+<div class="flex items-end gap-2">
+<span class="font-headline-md text-headline-md">4.8TB</span>
+<span class="text-on-secondary-container text-[10px] pb-1">Normal</span>
+</div>
+</div>
+</div>
+<div class="mt-6">
+<img alt="Resource Map" class="w-full h-32 object-cover rounded-lg" data-alt="A sophisticated data visualization matrix showing server resource distribution with a soft pastel color scheme, glowing gradients of mint and lavender, and high-end glassmorphism textures against a bright minimalist background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuApWKUqS7YBWiyFPTgjLY0HoI9PQBMwZhLcpuJdC1xuaZSdFeEzn3zBPSADnNl5WcZ09RCb2HcJBacZmIaojwEFOXHJn9kbsMCwyX6g6BLlkR17rSlMsMisv7Hu9PFI7iLu1bei2dzXJuubMobW3IzdYOAcB-S-pQ1oQuEd-oJ_FRvW070wXboSM4AvifSFjYKYsQQNEd8Oq81GiGQIlqPRCVpEQKcHHhUBhVjepd1wQRy4n_KgR6BMlnl9vGZhu2qt_wC325jGWzhh">
+</div>
+</div>
+<!-- Meeting Frequency & Activity (Medium) -->
+<div class="col-span-12 lg:col-span-7 bg-surface-container-lowest rounded-xl p-stack-lg shadow-sm animate-fade-in" style="animation-delay: 0.4s;">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-label-md text-label-md text-on-surface uppercase tracking-wide">Meeting Frequency</h3>
+<div class="flex gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span><span class="text-[10px] text-on-surface-variant">비디오</span>
+<span class="w-3 h-3 rounded-full bg-secondary"></span><span class="text-[10px] text-on-surface-variant">오디오</span>
+</div>
+</div>
+<div class="flex gap-4 h-56 items-end justify-around">
+<!-- Daily activity heatmap mockup using div stacks -->
+<div class="flex flex-col gap-1 w-full">
+<div class="flex justify-between items-end gap-1 h-40">
+<div class="bg-primary/20 hover:bg-primary transition-all w-full h-[60%] rounded-t-md"></div>
+<div class="bg-secondary/20 hover:bg-secondary transition-all w-full h-[30%] rounded-t-md"></div>
+<div class="bg-primary/20 hover:bg-primary transition-all w-full h-[80%] rounded-t-md"></div>
+<div class="bg-secondary/20 hover:bg-secondary transition-all w-full h-[50%] rounded-t-md"></div>
+<div class="bg-primary/20 hover:bg-primary transition-all w-full h-[70%] rounded-t-md"></div>
+<div class="bg-secondary/20 hover:bg-secondary transition-all w-full h-[90%] rounded-t-md"></div>
+<div class="bg-primary/20 hover:bg-primary transition-all w-full h-[40%] rounded-t-md"></div>
+</div>
+<div class="flex justify-between text-[10px] text-on-surface-variant px-1">
+<span class="">Mon</span><span class="">Tue</span><span class="">Wed</span><span class="">Thu</span><span class="">Fri</span><span class="">Sat</span><span class="">Sun</span>
+</div>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between p-3 bg-tertiary-fixed rounded-lg">
+<span class="font-body-sm text-body-sm text-on-tertiary-fixed-variant">가장 활발한 시간대</span>
+<span class="font-label-md text-label-md text-on-tertiary-fixed">오후 2:00 - 4:00 (KST)</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (Admin Actions) -->
+<!-- FAB is suppressed as per task instructions for non-home/dashboard specific transactional views, but provided here as a subtle shortcut if needed for 'Admin' context -->
+<script>
+        // Simple Chart Animation Trigger
+        window.addEventListener('load', () => {
+            const bars = document.querySelectorAll('.chart-bar');
+            bars.forEach(bar => {
+                const targetHeight = bar.style.height;
+                bar.style.height = '0px';
+                setTimeout(() => {
+                    bar.style.height = targetHeight;
+                }, 200);
+            });
+        });
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>
