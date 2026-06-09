@@ -230,6 +230,56 @@ class TaskFeatureTest(unittest.TestCase):
             'c1', None, valid, None, None
         )
 
+    # ---- #45: 수동 업무 생성 ----
+    @patch('app.services.task_service.ActionItemRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_create_requires_task_text(self, member_cls, repo_cls):
+        _member(member_cls)
+        with self._ctx():
+            with self.assertRaises(ValueError):
+                TaskService().create({'task': '   '})
+        repo_cls.return_value.create.assert_not_called()
+
+    @patch('app.services.task_service.ActionItemRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_create_unassigned_ok(self, member_cls, repo_cls):
+        _member(member_cls)
+        repo_cls.return_value.create.return_value = {'id': 't9', 'task': '문서화', 'status': 'TODO'}
+        with self._ctx():
+            result = TaskService().create({'task': '  문서화  ', 'due_date': '2026-07-01'})
+        repo_cls.return_value.create.assert_called_once_with('c1', '문서화', None, '2026-07-01')
+        self.assertEqual(result['status'], 'TODO')
+
+    @patch('app.services.task_service.ActionItemRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_create_rejects_non_member_assignee(self, member_cls, repo_cls):
+        # 요청자(u1)는 구성원, 지정 대상(outsider)은 비구성원
+        member_cls.return_value.find_by_user_company.side_effect = (
+            lambda u, c: {'id': 'm', 'role': 'MEMBER'} if u == 'u1' else None
+        )
+        with self._ctx():
+            with self.assertRaises(PermissionError):
+                TaskService().create({'task': '회의 준비', 'assignee_id': 'outsider'})
+        repo_cls.return_value.create.assert_not_called()
+
+    @patch('app.services.task_service.ActionItemRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_create_rejects_too_long_task(self, member_cls, repo_cls):
+        _member(member_cls)
+        with self._ctx():
+            with self.assertRaises(ValueError):
+                TaskService().create({'task': 'x' * 501})
+        repo_cls.return_value.create.assert_not_called()
+
+    @patch('app.services.task_service.ActionItemRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    def test_create_rejects_invalid_due_date(self, member_cls, repo_cls):
+        _member(member_cls)
+        with self._ctx():
+            with self.assertRaises(ValueError):
+                TaskService().create({'task': '문서화', 'due_date': 'not-a-date'})
+        repo_cls.return_value.create.assert_not_called()
+
 
 class SearchFeatureTest(unittest.TestCase):
     def setUp(self):
