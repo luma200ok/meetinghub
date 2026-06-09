@@ -7,7 +7,7 @@ notifications_bp = Blueprint('notifications', __name__)
 _svc = NotificationService()
 
 
-@notifications_bp.get('/')
+@notifications_bp.get('')
 @require_auth
 def list_notifications():
     return jsonify(_svc.list())

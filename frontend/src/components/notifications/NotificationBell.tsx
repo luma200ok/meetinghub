@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api/client";
+import { ENDPOINTS } from "@/lib/api/endpoints";
 
 type Notification = {
     id: string;
@@ -39,18 +41,7 @@ export default function NotificationBell() {
                 return;
             }
 
-            const response = await fetch("http://127.0.0.1:5000/api/notifications/", {
-                method: "GET",
-                headers,
-            });
-
-            if (!response.ok) {
-                console.error("알림 목록 조회 실패", response.status);
-                setNotifications([]);
-                return;
-            }
-
-            const data = await response.json();
+            const data = await api.get<Notification[]>(ENDPOINTS.NOTIFICATIONS, { headers });
             setNotifications(data);
         } catch (error) {
             console.error("알림 목록 fetch 실패", error);
@@ -68,18 +59,7 @@ export default function NotificationBell() {
                 return;
             }
 
-            const response = await fetch(
-                `http://127.0.0.1:5000/api/notifications/${notificationId}/read`,
-                {
-                    method: "PATCH",
-                    headers,
-                }
-            );
-
-            if (!response.ok) {
-                console.error("알림 읽음 처리 실패", response.status);
-                return;
-            }
+            await api.patch(`${ENDPOINTS.NOTIFICATIONS}/${notificationId}/read`, {}, { headers });
 
             // 읽음 처리 후 알림 목록 다시 조회
             await fetchNotifications();
