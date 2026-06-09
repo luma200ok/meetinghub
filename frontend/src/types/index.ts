@@ -80,6 +80,35 @@ export interface ActionItem {
   status: TaskStatus;
 }
 
+// ---- 회의록 API 응답 (snake_case — 백엔드 JSON 직렬화 그대로) ----
+export interface Minute {
+  id: string;
+  reservation_id: string;
+  content: string;
+  created_by: string;
+  author_name: string | null;
+  created_at: string;
+  updated_at: string;
+  reservation?: {
+    id: string;
+    title: string;
+    start_at: string;
+    end_at: string;
+    room_id: string;
+  } | null;
+}
+
+// ---- 예약 API 응답 (snake_case — 백엔드 JSON 직렬화 그대로) ----
+export interface ApiReservation {
+  id: string;
+  title: string;
+  room_id: string;
+  start_at: string;
+  end_at: string;
+  status: ReservationStatus;
+  organizer_id: string;
+}
+
 // ---- 알림 ----
 export interface Notification {
   id: string;
