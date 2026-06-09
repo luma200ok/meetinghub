@@ -1,0 +1,286 @@
+<!DOCTYPE html><html lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MeetingHub - 시작하기</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#444655",
+                    "on-primary-container": "#00496d",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#d8e3fa",
+                    "surface-container-low": "#f0f3ff",
+                    "surface-container": "#e7eeff",
+                    "primary-container": "#7cb9e8",
+                    "surface-container-high": "#dee8ff",
+                    "surface-tint": "#1c648e",
+                    "on-tertiary-fixed": "#191b29",
+                    "inverse-surface": "#263142",
+                    "error-container": "#ffdad6",
+                    "primary-fixed-dim": "#90cdfd",
+                    "on-error": "#ffffff",
+                    "surface-variant": "#d8e3fa",
+                    "on-surface-variant": "#41484e",
+                    "on-tertiary-container": "#424453",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#004b70",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#f9f9ff",
+                    "outline": "#71787f",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#1c648e",
+                    "tertiary-fixed": "#e1e1f5",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#001e30",
+                    "on-surface": "#111c2c",
+                    "primary-fixed": "#cae6ff",
+                    "secondary-fixed": "#bdecde",
+                    "on-secondary-fixed": "#00201a",
+                    "on-background": "#111c2c",
+                    "background": "#f9f9ff",
+                    "on-secondary-container": "#3f6b60",
+                    "tertiary-container": "#b1b1c4",
+                    "secondary-container": "#bae9db",
+                    "secondary-fixed-dim": "#a2d0c2",
+                    "inverse-on-surface": "#ebf1ff",
+                    "tertiary-fixed-dim": "#c5c5d8",
+                    "on-secondary-fixed-variant": "#224e44",
+                    "tertiary": "#5c5d6e",
+                    "surface-bright": "#f9f9ff",
+                    "error": "#ba1a1a",
+                    "surface-dim": "#cfdaf1",
+                    "secondary": "#3b665b",
+                    "outline-variant": "#c0c7cf",
+                    "inverse-primary": "#90cdfd"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-md": "16px",
+                    "stack-lg": "32px",
+                    "stack-sm": "8px",
+                    "gutter": "24px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "48px",
+                    "unit": "4px",
+                    "container-max-width": "1440px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Hanken Grotesk"],
+                    "headline-md": ["Hanken Grotesk"],
+                    "body-sm": ["Hanken Grotesk"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "label-md": ["Hanken Grotesk"],
+                    "body-md": ["Hanken Grotesk"],
+                    "label-sm": ["Hanken Grotesk"],
+                    "body-lg": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                    "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                    "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                    "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                    "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                    "label-md": ["14px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                    "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                    "label-sm": ["12px", { "lineHeight": "14px", "fontWeight": "700" }],
+                    "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        font-family: 'Hanken Grotesk', sans-serif;
+        background-color: #f9f9ff;
+        color: #111c2c;
+        overflow-x: hidden;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+      .soft-glow {
+        box-shadow: 0 20px 40px -10px rgba(28, 100, 142, 0.08);
+      }
+      .pastel-gradient {
+        background: linear-gradient(135deg, #f0f3ff 0%, #e7eeff 100%);
+      }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-margin-mobile md:p-margin-desktop">
+<!-- Background Decoration -->
+<div class="fixed inset-0 -z-10 overflow-hidden">
+
+<div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-secondary-container blur-[100px] opacity-40 animate-pulse"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-tertiary-fixed blur-[120px] opacity-30"></div>
+</div>
+<!-- Main Container -->
+<main class="w-full max-w-[480px] flex flex-col items-center text-center space-y-stack-lg mb-stack-lg flex-1">
+<!-- Logo Section -->
+<div class="mb-stack-sm flex items-center space-x-2">
+<span class="material-symbols-outlined text-primary text-[40px]" style="font-variation-settings: 'FILL' 1;">hub</span>
+<span class="font-headline-md text-headline-md font-black text-primary tracking-tight">MeetingHub</span>
+</div>
+<!-- Headline & Subtext -->
+<div class="space-y-stack-sm">
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight">MeetingHub 시작하기</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-[400px] mx-auto">
+                개인 사용자를 위한 최적의 협업 도구로 생산성을 높여보세요.
+            </p>
+</div>
+<!-- Signup Form Card -->
+<div class="w-full glass-card p-stack-lg rounded-xl soft-glow flex flex-col space-y-stack-md">
+<!-- Social Login Buttons -->
+<div class="flex flex-col space-y-3">
+<button class="flex items-center justify-center space-x-3 w-full py-4 bg-surface-container-lowest border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 group active:scale-[0.98]">
+<svg class="w-5 h-5" viewBox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+<span class="">Google로 계속하기</span>
+</button>
+<button class="flex items-center justify-center space-x-3 w-full py-4 bg-surface-container-lowest border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 group active:scale-[0.98]">
+<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+<path d="M17.05 20.28c-.96.95-2.06 1.11-3.04 1.11s-2.02-.15-3.08-1.11c-1.12-1.04-1.99-2.81-1.99-4.82 0-3.32 2.14-5.11 4.27-5.11 1.03 0 2.03.35 2.76 1.03 1.44-.94 2.8-.75 3.35-.55-.32 1.45-1.18 4.24-2.27 5.45zM12.03 9.44c-.05-1.55 1.27-2.92 2.78-3.04.13 1.61-1.27 3.07-2.78 3.04z"></path>
+</svg>
+<span class="">Apple로 계속하기</span>
+</button>
+</div>
+<div class="flex items-center space-x-4 py-2">
+<div class="h-[1px] flex-1 bg-outline-variant opacity-30"></div>
+<span class="font-label-sm text-label-sm text-outline">또는</span>
+<div class="h-[1px] flex-1 bg-outline-variant opacity-30"></div>
+</div>
+<!-- Email Input -->
+<form class="space-y-stack-md text-left">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="email">이메일 주소</label>
+<input class="w-full px-4 py-3.5 rounded-lg bg-surface-container-lowest border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 font-body-md text-body-md text-on-surface" id="email" placeholder="name@company.com" required="" type="email">
+</div>
+<button class="w-full py-4 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-[0.98] transition-all duration-200 shadow-md" type="submit">
+                    이메일로 시작하기
+                </button>
+</form>
+<p class="font-body-sm text-body-sm text-on-surface-variant pt-2">
+                가입 시 <a class="text-primary hover:underline font-semibold" href="#">이용 약관</a> 및 <a class="text-primary hover:underline font-semibold" href="#">개인정보 처리방침</a>에 동의하게 됩니다.
+            </p>
+</div>
+<!-- Footer Help -->
+<div class="pt-stack-md flex items-center justify-center space-x-2">
+<span class="font-body-md text-body-md text-on-surface-variant">이미 계정이 있으신가요?</span>
+<a class="font-label-md text-label-md text-primary hover:underline font-bold" href="#">로그인</a>
+</div>
+</main>
+<!-- Side Illustration (Subtle/Abstract) -->
+<div class="hidden lg:block fixed left-12 top-1/2 -translate-y-1/2 w-72 h-72">
+
+<div class="mt-stack-md p-4 bg-white/40 rounded-xl backdrop-blur-sm border border-white/50 text-left">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-widest mb-1 block">Productive Serenity</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">모든 미팅을 하나의 캔버스에서 관리하고 인사이트를 얻으세요.</p>
+</div>
+</div>
+<!-- Right Side Floating Elements -->
+<div class="hidden lg:block fixed right-12 top-1/2 -translate-y-1/2 space-y-4">
+
+
+</div>
+<!-- Background Images for Data-Alt compliance -->
+<div class="hidden">
+<img data-alt="A serene workspace background with soft pastel gradients of sky blue, mint green, and pale lavender. The lighting is bright and airy, suggesting a morning in a minimalist modern studio. Delicate floating geometric shapes in white and translucent materials add a layer of technological depth. The overall aesthetic is clean, professional, and optimistic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCC3uPz2NckTMVVUyoGaTbinC7NO41iV52P6A1DMJ1XT6un9oBY-Ke0bGp76sbeRGa2A086O_XYtovqHtlsJFhRr81POyKkS0SFcqfqvAGS7ZtIbmdrrOo_0YmjIij2XfZjwYw36nzuGEldz8qpFNSaTV4RwjEOlDFB5fkRSNhB-3HozJTQwO9riyFGToiBTY9Hg_7ghMtc25PySX7B8FLIZdfS58EiPC-2PwyPvCBHoyi09zWbN18U7r4IPC8Fm9RsAggO0L05DtEc">
+</div>
+<script>
+        // Micro-interaction for input field
+        const emailInput = document.getElementById('email');
+        emailInput.addEventListener('focus', () => {
+            emailInput.parentElement.parentElement.classList.add('ring-offset-2');
+        });
+        emailInput.addEventListener('blur', () => {
+            emailInput.parentElement.parentElement.classList.remove('ring-offset-2');
+        });
+
+        // Form submission animation placeholder
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = form.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span>';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.innerText = "환영합니다!";
+                btn.classList.replace('bg-primary', 'bg-secondary');
+            }, 1500);
+        });
+    </script>
+
+
+<footer class="w-full py-24 bg-surface-container-low border-t border-outline-variant mt-20">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-stack-lg px-margin-mobile md:px-margin-desktop">
+<div class="md:col-span-1">
+<div class="flex items-center gap-2 mb-stack-md">
+<span class="material-symbols-outlined text-primary text-2xl icon-fill" style="font-variation-settings: 'FILL' 1;">meeting_room</span>
+<span class="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">MeetingHub</span>
+</div>
+<p class="text-on-surface-variant font-body-sm text-body-sm leading-relaxed mb-stack-lg text-left">모던 워크플레이스를 위한 최적의 회의 협업 솔루션. 더 스마트하게 소통하세요.</p>
+<div class="flex gap-stack-md">
+<a class="text-outline hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">share</span></a>
+<a class="text-outline hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">chat</span></a>
+<a class="text-outline hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">language</span></a>
+</div>
+</div>
+<div class="text-left">
+<h4 class="font-label-md text-label-md font-bold mb-stack-md text-on-surface uppercase tracking-widest">기능</h4>
+<ul class="space-y-2">
+<li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">스마트 요약</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">일정 관리</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">연동 서비스</a></li>
+</ul>
+</div>
+<div class="text-left">
+<h4 class="font-label-md text-label-md font-bold mb-stack-md text-on-surface uppercase tracking-widest">지원</h4>
+<ul class="space-y-2">
+<li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">도움말 센터</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">커뮤니티</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">문의하기</a></li>
+</ul>
+</div>
+<div class="text-left">
+<h4 class="font-label-md text-label-md font-bold mb-stack-md text-on-surface uppercase tracking-widest">법적 고지</h4>
+<ul class="space-y-2">
+<li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">개인정보 처리방침</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">서비스 약관</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="#">보안 안내</a></li>
+</ul>
+</div>
+</div>
+<div class="mt-20 pt-8 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-stack-md px-margin-mobile md:px-margin-desktop">
+<p class="font-label-sm text-label-sm text-outline">© 2024 MeetingHub Collaboration Systems Inc.</p>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary shadow-sm"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">시스템 상태: 정상</span>
+</div>
+</div>
+</footer>
+
+</body></html>
