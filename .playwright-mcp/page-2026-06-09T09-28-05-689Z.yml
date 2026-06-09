@@ -1,0 +1,112 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]: meeting_room
+        - generic [ref=e6]: MeetingHub
+      - generic [ref=e7]:
+        - heading "로그인" [level=1] [ref=e8]
+        - paragraph [ref=e9]: 플랫폼에 접속하여 협업을 시작하세요.
+      - generic [ref=e10]:
+        - button "Google" [ref=e11] [cursor=pointer]:
+          - img [ref=e12]
+          - generic [ref=e17]: Google
+        - button "Kakao" [ref=e18] [cursor=pointer]:
+          - img [ref=e19]
+          - generic [ref=e21]: Kakao
+      - generic [ref=e24]: 또는 이메일로 로그인
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - generic [ref=e28]: 이메일 주소
+          - generic [ref=e29]:
+            - generic [ref=e30]: mail
+            - textbox "이메일 주소" [ref=e31]:
+              - /placeholder: example@meetinghub.ai
+              - text: verify-test@example.com
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - generic [ref=e34]: 비밀번호
+            - link "비밀번호를 잊으셨나요?" [ref=e35] [cursor=pointer]:
+              - /url: "#"
+          - generic [ref=e36]:
+            - generic [ref=e37]: lock
+            - textbox "비밀번호" [ref=e38]:
+              - /placeholder: ••••••••
+              - text: dummy-wrong-password-123
+        - generic [ref=e39]:
+          - generic [ref=e40]: 회사 ID (선택사항)
+          - generic [ref=e41]:
+            - generic [ref=e42]: corporate_fare
+            - textbox "회사 ID (선택사항)" [ref=e43]:
+              - /placeholder: 회사 ID가 있는 경우 입력하세요
+        - generic [ref=e44]:
+          - checkbox "로그인 상태 유지" [ref=e45]
+          - generic [ref=e46]: 로그인 상태 유지
+        - button "로그인 arrow_forward" [ref=e47] [cursor=pointer]:
+          - generic [ref=e48]: 로그인
+          - generic [ref=e49]: arrow_forward
+        - paragraph [ref=e102]: Invalid login credentials
+      - paragraph [ref=e51]:
+        - text: 계정이 없으신가요?
+        - link "회원가입" [ref=e52] [cursor=pointer]:
+          - /url: /signup
+    - paragraph [ref=e54]:
+      - text: MeetingHub 서비스 이용 시 이용약관 및 개인정보 처리방침에 동의하는 것으로 간주됩니다.
+      - text: © 2024 MeetingHub Inc. All rights reserved.
+    - contentinfo [ref=e55]:
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - generic [ref=e59]: meeting_room
+            - generic [ref=e60]: MeetingHub
+          - paragraph [ref=e61]: 모던 워크플레이스를 위한 최적의 회의 협업 솔루션. 더 스마트하게 소통하세요.
+          - generic [ref=e62]:
+            - link "share" [ref=e63] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e64]: share
+            - link "chat" [ref=e65] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e66]: chat
+            - link "language" [ref=e67] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e68]: language
+        - generic [ref=e69]:
+          - heading "기능" [level=4] [ref=e70]
+          - list [ref=e71]:
+            - listitem [ref=e72]:
+              - link "스마트 요약" [ref=e73] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e74]:
+              - link "일정 관리" [ref=e75] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e76]:
+              - link "연동 서비스" [ref=e77] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e78]:
+          - heading "지원" [level=4] [ref=e79]
+          - list [ref=e80]:
+            - listitem [ref=e81]:
+              - link "도움말 센터" [ref=e82] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e83]:
+              - link "커뮤니티" [ref=e84] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e85]:
+              - link "문의하기" [ref=e86] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e87]:
+          - heading "법적 고지" [level=4] [ref=e88]
+          - list [ref=e89]:
+            - listitem [ref=e90]:
+              - link "개인정보 처리방침" [ref=e91] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e92]:
+              - link "서비스 약관" [ref=e93] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e94]:
+              - link "보안 안내" [ref=e95] [cursor=pointer]:
+                - /url: "#"
+      - generic [ref=e96]:
+        - paragraph [ref=e97]: © 2024 MeetingHub Collaboration Systems Inc.
+        - generic [ref=e100]: "시스템 상태: 정상"
+  - alert [ref=e101]

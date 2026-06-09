@@ -1,0 +1,31 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - img "Welcome Workspace" [ref=e7]
+        - generic [ref=e9]:
+          - heading "환영합니다! 새로운 시작을 준비하세요." [level=1] [ref=e10]:
+            - text: 환영합니다!
+            - text: 새로운 시작을 준비하세요.
+          - paragraph [ref=e11]: Nexus AI의 모든 기능을 경험하기 위해 새로운 기업을 생성하거나, 기존 팀에 참여해 보세요.
+      - generic [ref=e13]:
+        - generic [ref=e15] [cursor=pointer]:
+          - generic [ref=e17]: add_business
+          - generic [ref=e18]:
+            - heading "기업 생성" [level=3] [ref=e19]
+            - paragraph [ref=e20]: 새로운 조직을 만들고 AI 워크스페이스를 구성하세요. 관리자로서 팀원을 초대할 수 있습니다.
+            - button "시작하기 arrow_forward" [ref=e21]:
+              - text: 시작하기
+              - generic [ref=e22]: arrow_forward
+        - generic [ref=e24] [cursor=pointer]:
+          - generic [ref=e26]: group_add
+          - generic [ref=e27]:
+            - heading "초대 코드 입력" [level=3] [ref=e28]
+            - paragraph [ref=e29]: 이미 운영 중인 기업이 있나요? 공유받은 초대 코드를 입력하여 팀에 합류하세요.
+            - button "코드 입력 key" [ref=e30]:
+              - text: 코드 입력
+              - generic [ref=e31]: key
+    - generic [ref=e32]:
+      - generic [ref=e33]: help
+      - text: 도움이 필요하신가요? 고객지원 센터에 문의하세요.
+  - alert [ref=e34]

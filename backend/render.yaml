@@ -1,18 +1,20 @@
 services:
   - type: web
-    name: meetinghub-api
+    name: meetinghub-ai
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn main:app
     envVars:
-      - key: SECRET_KEY
-        sync: false
+      # 공개값 — repo 고정 (재현 가능). SUPABASE_URL은 프론트도 쓰는 공개 주소, CORS는 허용 출처.
       - key: SUPABASE_URL
+        value: https://toptwnqbqrqefhlbeelb.supabase.co
+      - key: CORS_ORIGINS
+        value: http://localhost:3000,https://meeting-hub-ai.netlify.app
+      # 시크릿 — Render 대시보드에서 입력 (절대 repo에 두지 않음)
+      - key: SECRET_KEY
         sync: false
       - key: SUPABASE_SERVICE_KEY
         sync: false
       - key: OPENAI_API_KEY
-        sync: false
-      - key: CORS_ORIGINS
         sync: false

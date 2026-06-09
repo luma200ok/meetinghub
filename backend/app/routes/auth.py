@@ -32,3 +32,10 @@ def accept_invite():
     data = request.get_json()
     result = _svc.accept_invite(data['token'], data['password'])
     return jsonify(result), 200
+
+@auth_bp.post('/oauth-sync')
+@require_auth
+def oauth_sync():
+    result = _svc.sync_oauth_user(g.user)
+    return jsonify(result), 200
+
