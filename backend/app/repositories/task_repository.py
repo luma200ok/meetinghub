@@ -27,6 +27,26 @@ class ActionItemRepository(BaseRepository):
         rows = query.execute().data or []
         return self._attach_assignees(rows)
 
+    def create(
+        self,
+        company_id: str,
+        task: str,
+        assignee_id: str | None = None,
+        due_date: str | None = None,
+        minute_id: str | None = None,
+    ) -> dict:
+        """수동 업무 생성(#45). minute_id 없이도 생성 가능(스키마상 nullable)."""
+        payload: dict = {'company_id': company_id, 'task': task, 'status': 'TODO'}
+        if assignee_id is not None:
+            payload['assignee_id'] = assignee_id
+        if due_date is not None:
+            payload['due_date'] = due_date
+        if minute_id is not None:
+            payload['minute_id'] = minute_id
+        rows = self.table.insert(payload).execute().data or []
+        created = rows[0] if rows else payload
+        return self._attach_assignees([created])[0]
+
     def find_in_company(self, task_id: str, company_id: str) -> dict | None:
         rows = (
             self.table.select(self._COLUMNS)

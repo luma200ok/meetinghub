@@ -41,6 +41,21 @@ class TaskService:
             self._company_id(), status, assignee_id, limit, offset
         )
 
+    def create(self, data: dict) -> dict:
+        """수동 업무 생성(#45): task 필수. assignee_id 지정 시 같은 company 구성원만."""
+        company_id = self._company_id()
+        source = data or {}
+
+        task_text = (source.get('task') or '').strip()
+        if not task_text:
+            raise ValueError('업무 내용은 필수입니다.')
+
+        assignee_id = source.get('assignee_id')
+        assignee_id = self._valid_assignee(assignee_id, company_id) if assignee_id else None
+
+        due_date = source.get('due_date') or None
+        return self.tasks.create(company_id, task_text, assignee_id, due_date)
+
     def update(self, task_id: str, data: dict) -> dict:
         company_id = self._company_id()
         task = self._get_or_404(task_id, company_id)
