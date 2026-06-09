@@ -39,12 +39,11 @@ export default function DashboardPage() {
   }, [accessToken, companyId]);
 
   return (
-    <main className="min-h-screen flex-1 bg-slate-50 px-6 py-8 text-slate-950">
-      <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <div className="border-b border-slate-200 pb-5">
-          <p className="text-sm font-medium text-emerald-700">Dashboard</p>
-          <h1 className="mt-1 text-3xl font-semibold">대시보드</h1>
-        </div>
+    <div className="flex flex-col gap-6 text-on-surface">
+      <div className="border-b border-outline-variant pb-5">
+        <p className="text-sm font-semibold text-primary">Dashboard</p>
+        <h1 className="mt-1.5 text-3xl font-bold tracking-tight text-on-background">대시보드</h1>
+      </div>
 
         {(!accessToken || !companyId) && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
@@ -90,8 +89,7 @@ export default function DashboardPage() {
             </div>
           </>
         )}
-      </section>
-    </main>
+    </div>
   );
 }
 

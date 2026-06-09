@@ -163,13 +163,12 @@ export default function OrganizationPage() {
   }
 
   return (
-    <main className="min-h-screen flex-1 bg-slate-50 px-6 py-8 text-slate-950">
-      <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <div className="flex flex-col gap-3 border-b border-slate-200 pb-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-sm font-medium text-emerald-700">Organization</p>
-            <h1 className="mt-1 text-3xl font-semibold">조직 관리</h1>
-          </div>
+    <div className="flex flex-col gap-6 text-on-surface">
+      <div className="flex flex-col gap-3 border-b border-outline-variant pb-5 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-primary">Organization</p>
+          <h1 className="mt-1.5 text-3xl font-bold tracking-tight text-on-background">조직 관리</h1>
+        </div>
           <button className="w-fit rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium" onClick={() => void loadOrganization()} disabled={isLoading}>
             {isLoading ? "불러오는 중" : "새로고침"}
           </button>
@@ -274,7 +273,6 @@ export default function OrganizationPage() {
             </table>
           </div>
         </section>
-      </section>
-    </main>
+    </div>
   );
 }
