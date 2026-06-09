@@ -76,3 +76,7 @@ class CompanyMemberRepository(BaseRepository):
 
 def create_auth_user(email: str, password: str):
     return get_supabase().auth.sign_up({'email': email, 'password': password})
+
+
+def authenticate_auth_user(email: str, password: str):
+    return get_supabase().auth.sign_in_with_password({'email': email, 'password': password})
