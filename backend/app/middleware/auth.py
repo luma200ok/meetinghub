@@ -21,6 +21,7 @@ def require_auth(f):
             return jsonify({'error': 'Invalid token'}), 401
 
         g.user = user_response.user
+
         g.company_id = request.headers.get('X-Company-Id')
         return f(*args, **kwargs)
     return wrapper
