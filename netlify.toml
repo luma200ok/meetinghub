@@ -8,7 +8,7 @@
 [build.environment]
   NEXT_PUBLIC_SUPABASE_URL             = "https://toptwnqbqrqefhlbeelb.supabase.co"
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_A7GIPP9C8-wehrANAm_Xcg_mTLbfDpi"
-  NEXT_PUBLIC_API_URL                  = "https://meetinghub-api.onrender.com"
+  NEXT_PUBLIC_API_URL                  = "https://meetinghub-ai.onrender.com"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
