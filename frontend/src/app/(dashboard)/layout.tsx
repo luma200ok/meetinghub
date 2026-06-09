@@ -29,7 +29,8 @@ export default function DashboardLayout({
         </div>
       </header>
 
-      <main>{children}</main>
+      {/* 각 페이지가 자체 <main> 을 렌더하므로 레이아웃은 래퍼 div 만 둔다 (중첩 <main> 방지, #6) */}
+      <div>{children}</div>
     </div>
   );
 }
