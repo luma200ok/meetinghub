@@ -11,8 +11,8 @@
 ## 인프라
 | 영역 | 상태 |
 |------|------|
-| 프론트 (Next.js) | Netlify(`meeting-hub-ai`) — `netlify.toml`에 공개 `NEXT_PUBLIC_*`(Supabase URL/키, API URL) 고정(#25). `npm run build` PASS |
-| 백엔드 (Flask) | Render(`meetinghub-api`) — `render.yaml`에 SUPABASE_URL·CORS 고정, 시크릿 3개만 대시보드. Python 3.11.9 고정(#23). pytest PASS |
+| 프론트 (Next.js) | Netlify(`meeting-hub-ai`) — `netlify.toml`에 공개 `NEXT_PUBLIC_*` 고정(#25), API URL=`meetinghub-ai.onrender.com`. `npm run build` PASS |
+| 백엔드 (Flask) | Render(`meetinghub-ai`, `meetinghub-ai.onrender.com`) — `/health` 200 확인, Render→Supabase OK. Python 3.11.9(#23). pytest PASS. ⚠️ 대시보드 `CORS_ORIGINS`에 Netlify 출처 추가 필요 |
 | DB / Auth | Supabase Cloud `toptwnqbqrqefhlbeelb` (ap-southeast-1) — 전 테이블 RLS 활성화 |
 | AI | OpenAI GPT-4o |
 
