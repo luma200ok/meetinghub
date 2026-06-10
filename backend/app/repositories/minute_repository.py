@@ -61,17 +61,20 @@ class MinuteRepository(BaseRepository):
         if not minutes:
             return []
 
-        # 4) 작성자 이름 일괄 조회 (users 테이블 — user_profiles 아님)
+        # 4) 작성자 표시명 일괄 조회 (이름 없으면 이메일로 — UUID 노출 방지)
         author_ids = list({m["created_by"] for m in minutes if m.get("created_by")})
         users = (
-            sb.table("users").select("id, name").in_("id", author_ids).execute().data or []
+            sb.table("users").select("id, name, email").in_("id", author_ids).execute().data or []
         )
         user_map = {u["id"]: u for u in users}
+
+        def _author(u):
+            return (u.get("name") or u.get("email")) if u else None
 
         return [
             {
                 **m,
-                "author_name": (user_map.get(m.get("created_by")) or {}).get("name"),
+                "author_name": _author(user_map.get(m.get("created_by"))),
                 "reservation": res_map.get(m["reservation_id"]),
             }
             for m in minutes
@@ -135,14 +138,14 @@ class MinuteRepository(BaseRepository):
     # ── 내부 헬퍼 ──────────────────────────────────────────────────────────────
 
     def _enrich(self, minute: dict) -> dict:
-        """users 테이블에서 작성자 이름 조회해 author_name 필드로 추가."""
+        """작성자 표시명을 author_name 으로 추가. 이름 없으면 이메일로(UUID 노출 방지)."""
         sb = get_supabase()
         author = None
         if minute.get("created_by"):
             author = single_or_none(
-                sb.table("users").select("name").eq("id", minute["created_by"]).maybe_single()
+                sb.table("users").select("name, email").eq("id", minute["created_by"]).maybe_single()
             )
         return {
             **minute,
-            "author_name": author.get("name") if author else None,
+            "author_name": (author.get("name") or author.get("email")) if author else None,
         }

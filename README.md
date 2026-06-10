@@ -135,6 +135,12 @@ git push origin backend/reservation
 > 담당 영역은 `backend/app/routes/`·`services/` 상단 주석(`# 담당: 홍길동`)으로도 표시돼 있습니다.
 > API 명세는 [docs/api-contract.md](docs/api-contract.md), DB 스키마는 [backend/db/schema.sql](backend/db/schema.sql) 참고.
 
+## 🔧 트러블슈팅
+
+배포(Vercel·Render·Supabase)·기능 개발 중 겪은 이슈와 원인·해결 과정을 노션에 정리했습니다.
+
+👉 **[MeetingHub 트러블슈팅 (Notion)](https://app.notion.com/p/MeetingHub-379ebe5ab30b81bda584fde4ffb9f7ee?source=copy_link)**
+
 ## 디자인 레퍼런스 🎨
 
 Google Stitch 디자인 시안(화면 14 + 디자인시스템)이 정리되어 있습니다.
