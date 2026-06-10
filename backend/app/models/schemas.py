@@ -55,6 +55,12 @@ class PositionCreateRequest(BaseModel):
     level: Optional[int] = None
 
 
+class MemberUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    department_id: Optional[str] = None
+    position_id: Optional[str] = None
+
+
 # ---- 예시: 회의 예약 (나머지는 각자 추가) ----
 class ReservationCreateRequest(BaseModel):
     room_id: str

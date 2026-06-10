@@ -19,6 +19,9 @@ class UserRepository(BaseRepository):
         rows = response.data or []
         return rows[0] if rows else payload
 
+    def update_name(self, user_id: str, name: str) -> dict:
+        return self.update(user_id, {'name': name})
+
 
 class InvitationRepository(BaseRepository):
     table_name = 'invitations'
