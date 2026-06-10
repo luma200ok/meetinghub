@@ -15,26 +15,47 @@ from app.errors import ApiError
 from app.services.tenant_guard import require_member_company
 from app.utils.supabase import get_supabase, single_or_none
 
-# ── OpenAI 클라이언트 ──────────────────────────────────────────────────────────
-# 모듈 로드 시점이 아니라 호출 시점에 키를 읽어 클라이언트를 만든다.
-# (OPENAI_API_KEY 교체+재시작 시 즉시 반영, 키 누락/오류를 명확히 안내하기 위함)
+# ── AI 클라이언트 (OpenAI / Gemini OpenAI-호환) ────────────────────────────────
+# 호출 시점에 키를 읽어 클라이언트를 만든다(키 교체+재시작 즉시 반영).
+# OpenAI(sk-...) 와 Gemini(OpenAI 호환 엔드포인트)를 모두 지원한다:
+#   - OPENAI_API_KEY 가 sk- 로 시작 → OpenAI 그대로
+#   - 그 외 키(예: Gemini) + AI_BASE_URL 미지정 → Gemini OpenAI-호환 엔드포인트로 자동 전환
+#   - AI_BASE_URL / AI_MODEL 로 명시 지정도 가능(타 호환 엔드포인트)
 try:
     from openai import OpenAI
 except ImportError:  # pragma: no cover
     OpenAI = None  # type: ignore
 
-# 사용할 모델 — 비용 효율적인 gpt-4o-mini 기본값
-_MODEL = "gpt-4o-mini"
+_OPENAI_DEFAULT_MODEL = "gpt-4o-mini"
+_GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
+_GEMINI_DEFAULT_MODEL = "gemini-2.0-flash"
+
+
+def _resolve_ai_config():
+    """(api_key, base_url, model) 결정. 키가 sk- 가 아니면 Gemini 로 자동 전환."""
+    api_key = (os.environ.get("OPENAI_API_KEY") or "").strip()
+    base_url = (os.environ.get("AI_BASE_URL") or "").strip() or None
+    model = (os.environ.get("AI_MODEL") or "").strip()
+    if api_key and not api_key.startswith("sk-") and base_url is None:
+        # Gemini 키로 간주 → OpenAI 호환 엔드포인트 + Gemini 모델
+        base_url = _GEMINI_BASE_URL
+        model = model or _GEMINI_DEFAULT_MODEL
+    if not model:
+        model = _OPENAI_DEFAULT_MODEL
+    return api_key, base_url, model
 
 
 def _get_openai_client():
-    """현재 OPENAI_API_KEY 로 OpenAI 클라이언트를 만든다. 미설치/키누락은 503."""
+    """현재 설정으로 AI 클라이언트를 만든다. 미설치/키누락은 503."""
     if OpenAI is None:
         raise ApiError(503, "OpenAI 라이브러리가 설치되지 않았습니다.")
-    api_key = (os.environ.get("OPENAI_API_KEY") or "").strip()
+    api_key, base_url, _ = _resolve_ai_config()
     if not api_key:
-        raise ApiError(503, "OpenAI API 키가 설정되지 않았습니다. (OPENAI_API_KEY)")
-    return OpenAI(api_key=api_key)
+        raise ApiError(503, "AI API 키가 설정되지 않았습니다. (OPENAI_API_KEY)")
+    kwargs = {"api_key": api_key}
+    if base_url:
+        kwargs["base_url"] = base_url
+    return OpenAI(**kwargs)
 
 
 class AiService:
@@ -154,11 +175,12 @@ class AiService:
         return content
 
     def _call_gpt(self, messages: list[dict]) -> str:
-        """OpenAI ChatCompletion 호출 후 텍스트 반환."""
+        """ChatCompletion 호출 후 텍스트 반환 (OpenAI / Gemini 호환)."""
         client = _get_openai_client()
+        _, _, model = _resolve_ai_config()
         try:
             response = client.chat.completions.create(
-                model=_MODEL,
+                model=model,
                 messages=messages,
                 temperature=0.3,
                 max_tokens=2000,
@@ -169,14 +191,23 @@ class AiService:
             raise
         except Exception as exc:
             msg = str(exc)
-            if "invalid_api_key" in msg or "Incorrect API key" in msg or "Error code: 401" in msg:
-                raise ApiError(502, "OpenAI API 키가 올바르지 않습니다. (Render의 OPENAI_API_KEY 확인 — sk-... 형식)")
+            low = msg.lower()
+            if "api key" in low or "api_key_invalid" in low or "invalid_api_key" in low or "error code: 401" in low:
+                raise ApiError(502, "AI API 키가 올바르지 않습니다. (OPENAI_API_KEY / 엔드포인트 확인 — OpenAI는 sk-, Gemini는 AI_BASE_URL 자동)")
             raise ApiError(502, f"AI 분석 중 오류가 발생했습니다: {msg}")
 
     def _parse_json_response(self, raw: str, minute_id: str, mode: str):
-        """GPT JSON 응답 파싱. 실패 시 ApiError."""
+        """JSON 응답 파싱. ```json 펜스로 감싼 경우(Gemini 등)도 처리. 실패 시 ApiError."""
+        text = (raw or "").strip()
+        if text.startswith("```"):
+            lines = text.split("\n")
+            if lines and lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].strip().startswith("```"):
+                lines = lines[:-1]
+            text = "\n".join(lines).strip()
         try:
-            return json.loads(raw)
+            return json.loads(text)
         except json.JSONDecodeError:
             raise ApiError(502, f"AI 응답을 파싱할 수 없습니다 (mode={mode}, minute_id={minute_id})")
 
