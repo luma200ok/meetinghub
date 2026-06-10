@@ -15,15 +15,26 @@ from app.errors import ApiError
 from app.services.tenant_guard import require_member_company
 from app.utils.supabase import get_supabase, single_or_none
 
-# ── OpenAI 클라이언트 초기화 ──────────────────────────────────────────────────
+# ── OpenAI 클라이언트 ──────────────────────────────────────────────────────────
+# 모듈 로드 시점이 아니라 호출 시점에 키를 읽어 클라이언트를 만든다.
+# (OPENAI_API_KEY 교체+재시작 시 즉시 반영, 키 누락/오류를 명확히 안내하기 위함)
 try:
     from openai import OpenAI
-    _openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", ""))
-except ImportError:
-    _openai_client = None  # type: ignore
+except ImportError:  # pragma: no cover
+    OpenAI = None  # type: ignore
 
 # 사용할 모델 — 비용 효율적인 gpt-4o-mini 기본값
 _MODEL = "gpt-4o-mini"
+
+
+def _get_openai_client():
+    """현재 OPENAI_API_KEY 로 OpenAI 클라이언트를 만든다. 미설치/키누락은 503."""
+    if OpenAI is None:
+        raise ApiError(503, "OpenAI 라이브러리가 설치되지 않았습니다.")
+    api_key = (os.environ.get("OPENAI_API_KEY") or "").strip()
+    if not api_key:
+        raise ApiError(503, "OpenAI API 키가 설정되지 않았습니다. (OPENAI_API_KEY)")
+    return OpenAI(api_key=api_key)
 
 
 class AiService:
@@ -34,9 +45,6 @@ class AiService:
         회의록 내용을 GPT로 분석하여 ai_summaries 테이블에 저장/업데이트.
         이미 분석 결과가 있으면 덮어쓴다(재분석).
         """
-        if _openai_client is None:
-            raise ApiError(503, "OpenAI 라이브러리가 설치되지 않았습니다.")
-
         content = self._get_minute_content(minute_id)
 
         # GPT 호출
@@ -59,31 +67,16 @@ class AiService:
         }
 
         if existing:
-            result = (
-                sb.table("ai_summaries")
-                .update(record)
-                .eq("id", existing["id"])
-                .execute()
-                .data[0]
-            )
+            rows = sb.table("ai_summaries").update(record).eq("id", existing["id"]).execute().data or []
         else:
-            result = (
-                sb.table("ai_summaries")
-                .insert(record)
-                .execute()
-                .data[0]
-            )
-
-        return result
+            rows = sb.table("ai_summaries").insert(record).execute().data or []
+        return rows[0] if rows else record
 
     def generate_action_items(self, minute_id: str) -> list[dict]:
         """
         회의록 내용을 GPT로 분석하여 Action Items 추출 → action_items 테이블 저장.
         기존 AI 생성 Action Items는 삭제 후 재생성(중복 방지).
         """
-        if _openai_client is None:
-            raise ApiError(503, "OpenAI 라이브러리가 설치되지 않았습니다.")
-
         content = self._get_minute_content(minute_id)
         company_id = self._company_id()
 
@@ -162,8 +155,9 @@ class AiService:
 
     def _call_gpt(self, messages: list[dict]) -> str:
         """OpenAI ChatCompletion 호출 후 텍스트 반환."""
+        client = _get_openai_client()
         try:
-            response = _openai_client.chat.completions.create(  # type: ignore[union-attr]
+            response = client.chat.completions.create(
                 model=_MODEL,
                 messages=messages,
                 temperature=0.3,
@@ -171,8 +165,13 @@ class AiService:
                 response_format={"type": "json_object"},
             )
             return response.choices[0].message.content or ""
+        except ApiError:
+            raise
         except Exception as exc:
-            raise ApiError(502, f"AI 분석 중 오류가 발생했습니다: {str(exc)}")
+            msg = str(exc)
+            if "invalid_api_key" in msg or "Incorrect API key" in msg or "Error code: 401" in msg:
+                raise ApiError(502, "OpenAI API 키가 올바르지 않습니다. (Render의 OPENAI_API_KEY 확인 — sk-... 형식)")
+            raise ApiError(502, f"AI 분석 중 오류가 발생했습니다: {msg}")
 
     def _parse_json_response(self, raw: str, minute_id: str, mode: str):
         """GPT JSON 응답 파싱. 실패 시 ApiError."""

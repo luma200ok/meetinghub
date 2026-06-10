@@ -78,7 +78,8 @@ export default function MinuteDetailPage() {
       // 다시 로드
       await loadData();
     } catch (e: any) {
-      alert("AI 분석 중 오류가 발생했습니다: " + e.message);
+      // 백엔드가 이미 "AI 분석 중 오류가..." 메시지를 주므로 중복 접두사 없이 그대로 노출
+      alert(e?.message || "AI 분석 중 오류가 발생했습니다.");
     } finally {
       setAnalyzing(false);
     }
