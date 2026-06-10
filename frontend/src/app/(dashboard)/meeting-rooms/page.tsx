@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api, authHeaders } from "@/lib/api/client";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { minutesApi } from "@/lib/api/minutes";
@@ -294,16 +294,38 @@ export default function MeetingRoomsPage() {
     setCurrentWeekBase(new Date());
   };
 
-  // 회의실 실시간 사용 여부 판단
-  const getRoomStatus = (roomId: string) => {
+  // 오늘 날짜로 이동 + 캘린더 섹션으로 스크롤
+  const calendarRef = useRef<HTMLDivElement>(null);
+
+  const handleTodayWithScroll = () => {
+    setCurrentWeekBase(new Date());
+    setTimeout(() => {
+      calendarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
+
+  // 회의실 실시간 상태 판별 (사용 중 / 승인 대기 / 예약 가능)
+  const getRoomStatus = (roomId: string): "IN_USE" | "RESERVED" | "AVAILABLE" => {
     const now = new Date();
-    const activeRes = reservations.find((res) => {
-      if (res.room_id !== roomId || res.status === "CANCELLED") return false;
+    const activeReservations = reservations.filter(
+      (res) => res.room_id === roomId && res.status !== "CANCELLED" && res.status !== "DONE"
+    );
+
+    // 현재 진행 중인 예약이 있으면 "사용 중"
+    const inUse = activeReservations.find((res) => {
       const start = new Date(res.start_at);
       const end = new Date(res.end_at);
       return now >= start && now <= end;
     });
-    return activeRes ? "IN_USE" : "AVAILABLE";
+    if (inUse) return "IN_USE";
+
+    // 미래에 예약(RESERVED 상태)이 존재하면 "승인 대기"
+    const upcoming = activeReservations.find((res) => {
+      return res.status === "RESERVED" && new Date(res.start_at) > now;
+    });
+    if (upcoming) return "RESERVED";
+
+    return "AVAILABLE";
   };
 
   // 캘린더 타임라인 렌더링 범위: 09:00 ~ 21:00 (12시간)
@@ -350,12 +372,12 @@ export default function MeetingRoomsPage() {
         rel="stylesheet"
       />
 
-      <div className="relative w-full text-on-surface">
+      <main className="min-h-screen flex-1 bg-slate-50 px-6 py-8 text-on-surface">
         {/* 뒷배경 AI 스파클 그라데이션 장식 */}
         <div className="fixed top-0 right-0 w-[50vw] h-[50vw] -mr-32 -mt-32 bg-primary/5 rounded-full blur-[140px] -z-10"></div>
         <div className="fixed bottom-0 left-0 w-[40vw] h-[40vw] -ml-32 -mb-32 bg-secondary-container/20 rounded-full blur-[120px] -z-10"></div>
 
-        <div className="w-full space-y-8">
+        <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
           {/* 에러 및 성공 알림 */}
           {error && (
             <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 flex justify-between items-center animate-in fade-in">
@@ -376,71 +398,86 @@ export default function MeetingRoomsPage() {
             </div>
           )}
 
-          {/* 헤더 섹션 */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          {/* 헤더 섹션 - Tasks 페이지 스타일 */}
+          <div className="flex items-start justify-between">
+            {/* 좌측: 소제목 + 대제목 */}
             <div>
-              <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-3xl font-bold">meeting_room</span>
+              <p className="text-sm font-semibold text-primary mb-1">Meeting Rooms</p>
+              <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
                 회의실 예약 및 일정 관리
               </h1>
-              <p className="text-sm text-slate-500 mt-1">
-                AI 기반 실시간 공간 매칭 및 예약 충돌 방지 시스템을 통해 협업 효율을 극대화합니다.
-              </p>
             </div>
-            
-            {/* 캘린더 컨트롤러 & 등록 버튼 */}
-            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              <div className="flex bg-white rounded-xl border border-slate-200 p-1 shadow-sm">
-                <button
-                  onClick={handlePrevWeek}
-                  className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors"
-                  title="이전 주"
-                >
-                  <span className="material-symbols-outlined text-sm block">chevron_left</span>
-                </button>
-                <div className="flex items-center border-r border-slate-200 pr-1 mr-1">
-                  <span className="material-symbols-outlined text-slate-400 text-sm pl-2 pointer-events-none">calendar_month</span>
-                  <input
-                    type="date"
-                    value={formatDateString(currentWeekBase)}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setCurrentWeekBase(new Date(e.target.value));
-                      }
-                    }}
-                    className="bg-transparent border-0 px-2 py-1 text-xs font-semibold text-slate-700 outline-none w-28 focus:ring-0 cursor-pointer"
-                  />
-                </div>
-                <button
-                  onClick={handleToday}
-                  className="px-4 py-1.5 hover:bg-slate-100 text-xs font-semibold rounded-lg text-slate-700 transition-colors"
-                >
-                  오늘
-                </button>
-                <button
-                  onClick={handleNextWeek}
-                  className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors"
-                  title="다음 주"
-                >
-                  <span className="material-symbols-outlined text-sm block">chevron_right</span>
-                </button>
-              </div>
 
-              <button
-                onClick={() => { setIsModalOpen(true); setModalRoomId(""); setModalNewRoomName(""); setError(""); }}
-                className="flex items-center justify-center gap-2 bg-primary text-white px-5 py-3 rounded-xl font-semibold text-sm hover:opacity-90 active:scale-95 shadow-md shadow-primary/20 transition-all cursor-pointer ml-auto md:ml-0"
+            {/* 우측: 로딩 상태 버튼 */}
+            <button
+              onClick={() => void loadData()}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-medium hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all disabled:opacity-60"
+            >
+              <span
+                className={`material-symbols-outlined text-base ${isLoading ? "animate-spin" : ""}`}
               >
-                <span className="material-symbols-outlined text-sm">add_circle</span>
-                새로운 예약
+                refresh
+              </span>
+              {isLoading ? "불러오는 중" : "새로고침"}
+            </button>
+          </div>
+
+          {/* 헤더 아래 구분선 */}
+          <hr className="border-slate-200" />
+
+          {/* 서브 컨트롤 바: 캘린더 이동 & 예약 버튼 */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex bg-white rounded-xl border border-slate-200 p-1 shadow-sm">
+              <button
+                onClick={handlePrevWeek}
+                className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors"
+                title="이전 주"
+              >
+                <span className="material-symbols-outlined text-sm block">chevron_left</span>
+              </button>
+              <div className="flex items-center border-r border-slate-200 pr-1 mr-1">
+                <span className="material-symbols-outlined text-slate-400 text-sm pl-2 pointer-events-none">calendar_month</span>
+                <input
+                  type="date"
+                  value={formatDateString(currentWeekBase)}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setCurrentWeekBase(new Date(e.target.value));
+                    }
+                  }}
+                  className="bg-transparent border-0 px-2 py-1 text-xs font-semibold text-slate-700 outline-none w-28 focus:ring-0 cursor-pointer"
+                />
+              </div>
+              <button
+                onClick={handleToday}
+                className="px-4 py-1.5 hover:bg-slate-100 text-xs font-semibold rounded-lg text-slate-700 transition-colors"
+              >
+                오늘
+              </button>
+              <button
+                onClick={handleNextWeek}
+                className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors"
+                title="다음 주"
+              >
+                <span className="material-symbols-outlined text-sm block">chevron_right</span>
               </button>
             </div>
+
+            <button
+              onClick={() => { setIsModalOpen(true); setModalRoomId(""); setModalNewRoomName(""); setError(""); }}
+              className="flex items-center justify-center gap-2 bg-primary text-white px-5 py-3 rounded-xl font-semibold text-sm hover:opacity-90 active:scale-95 shadow-md shadow-primary/20 transition-all cursor-pointer ml-auto"
+            >
+              <span className="material-symbols-outlined text-sm">add_circle</span>
+              새로운 예약
+            </button>
           </div>
 
           {/* 메인 Bento 레이아웃 */}
           <div className="grid grid-cols-12 gap-6">
             
             {/* 좌측: 캘린더 컴포넌트 (8컬럼) */}
-            <div className="col-span-12 lg:col-span-8 bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+            <div ref={calendarRef} className="col-span-12 lg:col-span-8 bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm flex flex-col">
               
               {/* 요일 헤더 */}
               <div className="grid grid-cols-7 border-b border-slate-200 text-center py-4 bg-slate-50">
@@ -581,20 +618,34 @@ export default function MeetingRoomsPage() {
                     <p className="text-xs text-slate-400 text-center py-4">등록된 회의실이 없습니다.</p>
                   ) : (
                     rooms.map((room) => {
-                      const isUse = getRoomStatus(room.id) === "IN_USE";
+                      const roomStatus = getRoomStatus(room.id);
+                      const isUse = roomStatus === "IN_USE";
+                      const isPending = roomStatus === "RESERVED";
+
+                      // 상태별 아이콘 배경 색상
+                      const iconBg = isUse
+                        ? "bg-red-50 text-red-600"
+                        : isPending
+                        ? "bg-amber-50 text-amber-600"
+                        : "bg-primary/10 text-primary";
+
+                      // 상태 뱃지 스타일
+                      const badgeStyle = isUse
+                        ? "bg-red-100 text-red-700"
+                        : isPending
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-primary-container/20 text-primary";
+
+                      // 상태 텍스트
+                      const statusLabel = isUse ? "사용 중" : isPending ? "승인 대기" : "예약 가능";
+
                       return (
                         <div
                           key={room.id}
                           className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-200/60"
                         >
                           <div className="flex items-center gap-3">
-                            <div
-                              className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                                isUse
-                                  ? "bg-red-50 text-red-600"
-                                  : "bg-primary/10 text-primary"
-                              }`}
-                            >
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}>
                               <span className="material-symbols-outlined text-xl">meeting_room</span>
                             </div>
                             <div>
@@ -604,14 +655,8 @@ export default function MeetingRoomsPage() {
                               </p>
                             </div>
                           </div>
-                          <span
-                            className={`px-2.5 py-1 rounded-lg text-[9px] font-bold tracking-wider ${
-                              isUse
-                                ? "bg-red-100 text-red-700"
-                                : "bg-primary-container/20 text-primary"
-                            }`}
-                          >
-                            {isUse ? "사용 중" : "예약 가능"}
+                          <span className={`px-2.5 py-1 rounded-lg text-[9px] font-bold tracking-wider ${badgeStyle}`}>
+                            {statusLabel}
                           </span>
                         </div>
                       );
@@ -637,7 +682,7 @@ export default function MeetingRoomsPage() {
                   해당 시간대의 단기 스탠딩 회의는 감마룸으로 예약을 분산하시는 것을 권장합니다.
                 </p>
                 <button
-                  onClick={handleToday}
+                  onClick={handleTodayWithScroll}
                   className="mt-4 text-primary font-bold text-[10px] flex items-center gap-1.5 hover:translate-x-1 transition-transform relative z-10"
                 >
                   오늘 일정 확인하기
@@ -693,8 +738,8 @@ export default function MeetingRoomsPage() {
             </div>
 
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
 
       {/* 공간 예약 모달 오버레이 */}
       {isModalOpen && (
