@@ -1,6 +1,7 @@
 """담당: 김관영 — 조직도 (부서 / 직급 / 직원)"""
 from flask import g
 
+from app.repositories.auth_repository import UserRepository
 from app.repositories.organization_repository import (
     DepartmentRepository,
     OrganizationMemberRepository,
@@ -50,6 +51,50 @@ class OrganizationService:
     # 직원
     def list_members(self) -> list[dict]:
         return self.members.list_members(require_member_company())
+
+    def update_member(self, member_id: str, data: dict) -> dict:
+        self._require_admin()
+        company_id = self._company_id()
+        member = self.members.find_in_company(member_id, company_id)
+        if member is None:
+            raise LookupError('직원을 찾을 수 없습니다.')
+
+        source = data or {}
+        allowed_fields = {'name', 'department_id', 'position_id'}
+        if not allowed_fields.intersection(source):
+            raise ValueError('수정할 직원 정보가 없습니다.')
+
+        name = None
+        if 'name' in source:
+            name = (source.get('name') or '').strip()
+            if not name:
+                raise ValueError('직원 이름은 필수입니다.')
+
+        member_payload = {}
+        if 'department_id' in source:
+            department_id = source.get('department_id') or None
+            if department_id and self.departments.find_in_company(department_id, company_id) is None:
+                raise ValueError('해당 회사의 부서를 찾을 수 없습니다.')
+            member_payload['department_id'] = department_id
+
+        if 'position_id' in source:
+            position_id = source.get('position_id') or None
+            if position_id and self.positions.find_in_company(position_id, company_id) is None:
+                raise ValueError('해당 회사의 직급을 찾을 수 없습니다.')
+            member_payload['position_id'] = position_id
+
+        user_id = member.get('user_id')
+        if not user_id:
+            raise LookupError('직원 계정 정보를 찾을 수 없습니다.')
+        if name is not None:
+            UserRepository().update_name(user_id, name)
+        if member_payload:
+            self.members.update_in_company(member_id, company_id, member_payload)
+
+        updated = self.members.get_member(member_id, company_id)
+        if updated is None:
+            raise LookupError('직원을 찾을 수 없습니다.')
+        return updated
 
     def _company_id(self) -> str:
         return require_member_company()

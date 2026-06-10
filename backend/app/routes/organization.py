@@ -56,3 +56,10 @@ def create_position():
 @require_company
 def list_members():
     return jsonify(_svc.list_members())
+
+
+@organization_bp.patch('/members/<member_id>')
+@require_auth
+@require_company
+def update_member(member_id: str):
+    return jsonify(_svc.update_member(member_id, request.get_json(silent=True) or {}))

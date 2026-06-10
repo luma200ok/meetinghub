@@ -304,6 +304,137 @@ class OrganizationFeatureTest(unittest.TestCase):
             with self.assertRaises(PermissionError):
                 OrganizationService().list_members()
 
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    @patch('app.services.organization_service.UserRepository')
+    @patch('app.services.organization_service.PositionRepository')
+    @patch('app.services.organization_service.OrganizationMemberRepository')
+    @patch('app.services.organization_service.DepartmentRepository')
+    def test_admin_updates_member_profile_and_assignment(
+        self,
+        department_repo_cls,
+        member_repo_cls,
+        position_repo_cls,
+        user_repo_cls,
+        tenant_member_repo_cls,
+    ):
+        tenant_member_repo_cls.return_value.find_by_user_company.return_value = {'role': 'ADMIN'}
+        member_repo = member_repo_cls.return_value
+        member_repo.find_in_company.return_value = {
+            'id': 'member-1',
+            'user_id': 'user-1',
+            'company_id': 'company-1',
+        }
+        member_repo.get_member.return_value = {
+            'id': 'member-1',
+            'user_id': 'user-1',
+            'department_id': 'dept-1',
+            'position_id': 'position-1',
+            'user': {'name': '김관영'},
+        }
+        department_repo_cls.return_value.find_in_company.return_value = {
+            'id': 'dept-1',
+            'company_id': 'company-1',
+        }
+        position_repo_cls.return_value.find_in_company.return_value = {
+            'id': 'position-1',
+            'company_id': 'company-1',
+        }
+
+        with self.app.test_request_context(headers={'X-Company-Id': 'company-1'}):
+            g.user = SimpleNamespace(id='admin-1')
+            g.company_id = 'company-1'
+            result = OrganizationService().update_member('member-1', {
+                'name': ' 김관영 ',
+                'department_id': 'dept-1',
+                'position_id': 'position-1',
+            })
+
+        user_repo_cls.return_value.update_name.assert_called_once_with('user-1', '김관영')
+        member_repo.update_in_company.assert_called_once_with('member-1', 'company-1', {
+            'department_id': 'dept-1',
+            'position_id': 'position-1',
+        })
+        self.assertEqual(result['user']['name'], '김관영')
+
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    @patch('app.services.organization_service.UserRepository')
+    @patch('app.services.organization_service.PositionRepository')
+    @patch('app.services.organization_service.OrganizationMemberRepository')
+    @patch('app.services.organization_service.DepartmentRepository')
+    def test_member_cannot_update_member(
+        self,
+        _department_repo_cls,
+        member_repo_cls,
+        _position_repo_cls,
+        user_repo_cls,
+        tenant_member_repo_cls,
+    ):
+        tenant_member_repo_cls.return_value.find_by_user_company.return_value = {'role': 'MEMBER'}
+
+        with self.app.test_request_context(headers={'X-Company-Id': 'company-1'}):
+            g.user = SimpleNamespace(id='member-1')
+            g.company_id = 'company-1'
+            with self.assertRaises(PermissionError):
+                OrganizationService().update_member('member-2', {'name': '변경'})
+
+        member_repo_cls.return_value.update_in_company.assert_not_called()
+        user_repo_cls.return_value.update_name.assert_not_called()
+
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    @patch('app.services.organization_service.UserRepository')
+    @patch('app.services.organization_service.PositionRepository')
+    @patch('app.services.organization_service.OrganizationMemberRepository')
+    @patch('app.services.organization_service.DepartmentRepository')
+    def test_update_member_rejects_department_from_another_company(
+        self,
+        department_repo_cls,
+        member_repo_cls,
+        _position_repo_cls,
+        user_repo_cls,
+        tenant_member_repo_cls,
+    ):
+        tenant_member_repo_cls.return_value.find_by_user_company.return_value = {'role': 'ADMIN'}
+        member_repo_cls.return_value.find_in_company.return_value = {
+            'id': 'member-1',
+            'user_id': 'user-1',
+            'company_id': 'company-1',
+        }
+        department_repo_cls.return_value.find_in_company.return_value = None
+
+        with self.app.test_request_context(headers={'X-Company-Id': 'company-1'}):
+            g.user = SimpleNamespace(id='admin-1')
+            g.company_id = 'company-1'
+            with self.assertRaises(ValueError):
+                OrganizationService().update_member('member-1', {'department_id': 'foreign-dept'})
+
+        member_repo_cls.return_value.update_in_company.assert_not_called()
+        user_repo_cls.return_value.update_name.assert_not_called()
+
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    @patch('app.services.organization_service.UserRepository')
+    @patch('app.services.organization_service.PositionRepository')
+    @patch('app.services.organization_service.OrganizationMemberRepository')
+    @patch('app.services.organization_service.DepartmentRepository')
+    def test_update_member_cannot_target_another_company_member(
+        self,
+        _department_repo_cls,
+        member_repo_cls,
+        _position_repo_cls,
+        user_repo_cls,
+        tenant_member_repo_cls,
+    ):
+        tenant_member_repo_cls.return_value.find_by_user_company.return_value = {'role': 'ADMIN'}
+        member_repo_cls.return_value.find_in_company.return_value = None
+
+        with self.app.test_request_context(headers={'X-Company-Id': 'company-1'}):
+            g.user = SimpleNamespace(id='admin-1')
+            g.company_id = 'company-1'
+            with self.assertRaises(LookupError):
+                OrganizationService().update_member('foreign-member', {'name': '변경'})
+
+        member_repo_cls.return_value.update_in_company.assert_not_called()
+        user_repo_cls.return_value.update_name.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()

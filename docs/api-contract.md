@@ -17,6 +17,7 @@
 | 부서 CRUD | GET/POST/PUT/DELETE | `/api/departments` | 김관영 |
 | 직급 | GET/POST | `/api/positions` | 김관영 |
 | 직원 목록 | GET | `/api/members` | 김관영 |
+| 직원 정보 수정 | PATCH | `/api/members/<id>` | 김관영 |
 | 회의실 CRUD | GET/POST/PUT/DELETE | `/api/meeting-rooms` | 김승현 |
 | 회의 예약 | GET/POST/PUT/DELETE | `/api/reservations` | 김승현 |
 | 참석자 추가 | POST | `/api/reservations/<id>/attendees` | 김승현 |
@@ -45,6 +46,12 @@
 - **회의 예약**: `RESERVED` / `IN_PROGRESS` / `DONE` / `CANCELLED`
 - **업무**: `TODO` / `IN_PROGRESS` / `DONE` / `BLOCKED`
 - **알림 타입**: `MEETING_REMINDER` / `TASK_ASSIGNED` / `INVITE`
+
+## 조직 관리 응답 (김관영)
+- `GET /api/members` → `[{id, user_id, department_id, position_id, role, user, department, position}]`
+- `PATCH /api/members/<id>` body `{name?, department_id?, position_id?}`
+- 직원 수정은 ADMIN만 가능하며, `department_id`와 `position_id`에 `null`을 보내면 배정을 해제합니다.
+- 대상 직원·부서·직급은 요청의 `X-Company-Id`와 같은 회사에 속해야 합니다.
 
 ## 업무·검색·대시보드 응답 (정재봉)
 - `GET /api/tasks?status=&assignee_id=` → `[{id, task, status, due_date, assignee:{email,name}}]`
