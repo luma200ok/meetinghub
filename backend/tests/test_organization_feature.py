@@ -194,6 +194,26 @@ class OrganizationFeatureTest(unittest.TestCase):
             with self.assertRaises(PermissionError):
                 OrganizationService().create_department({'name': 'Product'})
 
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    @patch('app.services.organization_service.PositionRepository')
+    @patch('app.services.organization_service.OrganizationMemberRepository')
+    @patch('app.services.organization_service.DepartmentRepository')
+    def test_create_position_rejects_non_positive_level(
+        self,
+        _department_repo_cls,
+        _member_list_repo_cls,
+        position_repo_cls,
+        member_repo_cls,
+    ):
+        member_repo_cls.return_value.find_by_user_company.return_value = {'role': 'ADMIN'}
+        with self.app.test_request_context(headers={'X-Company-Id': 'company-1'}):
+            g.user = SimpleNamespace(id='admin-1')
+            g.company_id = 'company-1'
+            for bad in (0, -1, -2):
+                with self.assertRaises(ValueError):
+                    OrganizationService().create_position({'name': '매니저', 'level': bad})
+        position_repo_cls.return_value.insert.assert_not_called()
+
     def test_standard_errors_are_registered_in_error_module(self):
         with patch.dict(os.environ, {
             'SECRET_KEY': 'test-secret',

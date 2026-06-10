@@ -98,6 +98,9 @@ class OrganizationService:
                 level = int(level)
             except (TypeError, ValueError):
                 raise ValueError('직급 레벨은 숫자여야 합니다.')
+            # 직급 레벨은 1 이상의 양수만 허용(0·음수 입력 차단).
+            if level < 1:
+                raise ValueError('직급 레벨은 1 이상이어야 합니다.')
 
         return {
             'company_id': self._company_id(),

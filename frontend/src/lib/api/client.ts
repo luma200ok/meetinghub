@@ -31,7 +31,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const error = await res.json().catch(() => ({}));
     // HTTP 상태코드를 에러에 실어, 호출자가 메시지 문자열 매칭 대신 status 로 분기할 수 있게 한다.
     // (예: getByReservation 이 404 만 null 로 처리하고 401/403 은 throw)
-    const err = new Error(error.error ?? error.message ?? res.statusText) as Error & { status?: number };
+    const base = error.error ?? error.message ?? res.statusText;
+    // 서버가 detail(예외 타입/메시지)을 함께 주면 메시지에 덧붙여 원인 파악을 돕는다.
+    const message = error.detail ? `${base} (${error.detail})` : base;
+    const err = new Error(message) as Error & { status?: number };
     err.status = res.status;
     throw err;
   }
