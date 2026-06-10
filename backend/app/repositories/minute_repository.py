@@ -1,6 +1,6 @@
 from typing import Optional
 from app.repositories.base import BaseRepository
-from app.utils.supabase import get_supabase
+from app.utils.supabase import get_supabase, single_or_none
 
 
 class MinuteRepository(BaseRepository):
@@ -8,13 +8,8 @@ class MinuteRepository(BaseRepository):
 
     def find_by_id(self, minute_id: str, company_id: str) -> Optional[dict]:
         """회의록 단건 조회 + company 소속 검증."""
-        minute = (
-            self.table
-            .select("*")
-            .eq("id", minute_id)
-            .maybe_single()
-            .execute()
-            .data
+        minute = single_or_none(
+            self.table.select("*").eq("id", minute_id).maybe_single()
         )
         if minute is None:
             return None
@@ -24,13 +19,8 @@ class MinuteRepository(BaseRepository):
         return self._enrich(minute)
 
     def find_by_reservation(self, reservation_id: str) -> Optional[dict]:
-        minute = (
-            self.table
-            .select("*")
-            .eq("reservation_id", reservation_id)
-            .maybe_single()
-            .execute()
-            .data
+        minute = single_or_none(
+            self.table.select("*").eq("reservation_id", reservation_id).maybe_single()
         )
         if minute is None:
             return None
@@ -122,39 +112,25 @@ class MinuteRepository(BaseRepository):
         self.table.delete().eq("id", minute_id).execute()
 
     def exists_for_reservation(self, reservation_id: str) -> bool:
-        return (
-            self.table
-            .select("id")
-            .eq("reservation_id", reservation_id)
-            .maybe_single()
-            .execute()
-            .data is not None
-        )
+        return single_or_none(
+            self.table.select("id").eq("reservation_id", reservation_id).maybe_single()
+        ) is not None
 
     def reservation_belongs_to_company(self, reservation_id: str, company_id: str) -> bool:
         """meeting_reservations 에 company_id 없음 → room_id → meeting_rooms 경유."""
         sb = get_supabase()
-        res = (
-            sb.table("meeting_reservations")
-            .select("room_id")
-            .eq("id", reservation_id)
-            .maybe_single()
-            .execute()
+        res = single_or_none(
+            sb.table("meeting_reservations").select("room_id").eq("id", reservation_id).maybe_single()
         )
-        if res.data is None:
+        if res is None:
             return False
-        room_id = res.data.get("room_id")
+        room_id = res.get("room_id")
         if not room_id:
             return False
-        room = (
-            sb.table("meeting_rooms")
-            .select("id")
-            .eq("id", room_id)
-            .eq("company_id", company_id)
-            .maybe_single()
-            .execute()
+        room = single_or_none(
+            sb.table("meeting_rooms").select("id").eq("id", room_id).eq("company_id", company_id).maybe_single()
         )
-        return room.data is not None
+        return room is not None
 
     # ── 내부 헬퍼 ──────────────────────────────────────────────────────────────
 
@@ -163,14 +139,9 @@ class MinuteRepository(BaseRepository):
         sb = get_supabase()
         author = None
         if minute.get("created_by"):
-            author_res = (
-                sb.table("users")
-                .select("name")
-                .eq("id", minute["created_by"])
-                .maybe_single()
-                .execute()
+            author = single_or_none(
+                sb.table("users").select("name").eq("id", minute["created_by"]).maybe_single()
             )
-            author = author_res.data
         return {
             **minute,
             "author_name": author.get("name") if author else None,

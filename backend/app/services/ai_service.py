@@ -13,7 +13,7 @@ from flask import g
 
 from app.errors import ApiError
 from app.services.tenant_guard import require_member_company
-from app.utils.supabase import get_supabase
+from app.utils.supabase import get_supabase, single_or_none
 
 # ── OpenAI 클라이언트 초기화 ──────────────────────────────────────────────────
 try:
@@ -46,13 +46,8 @@ class AiService:
 
         # ai_summaries upsert (같은 minute_id가 있으면 업데이트)
         sb = get_supabase()
-        existing = (
-            sb.table("ai_summaries")
-            .select("id")
-            .eq("minute_id", minute_id)
-            .maybe_single()
-            .execute()
-            .data
+        existing = single_or_none(
+            sb.table("ai_summaries").select("id").eq("minute_id", minute_id).maybe_single()
         )
 
         record = {
@@ -135,38 +130,22 @@ class AiService:
         """
         company_id = require_member_company()
         sb = get_supabase()
-        minute = (
-            sb.table("meeting_minutes")
-            .select("company_id")
-            .eq("id", minute_id)
-            .maybe_single()
-            .execute()
-            .data
+        minute = single_or_none(
+            sb.table("meeting_minutes").select("company_id").eq("id", minute_id).maybe_single()
         )
         if minute is None or minute.get("company_id") != company_id:
             return None
-        result = (
-            sb.table("ai_summaries")
-            .select("*")
-            .eq("minute_id", minute_id)
-            .maybe_single()
-            .execute()
-            .data
+        return single_or_none(
+            sb.table("ai_summaries").select("*").eq("minute_id", minute_id).maybe_single()
         )
-        return result
 
     # ── 내부 헬퍼 ────────────────────────────────────────────────────────────────
 
     def _get_minute_content(self, minute_id: str) -> str:
         """회의록 내용 조회. 없거나 비어있으면 ApiError."""
         sb = get_supabase()
-        row = (
-            sb.table("meeting_minutes")
-            .select("content, company_id")
-            .eq("id", minute_id)
-            .maybe_single()
-            .execute()
-            .data
+        row = single_or_none(
+            sb.table("meeting_minutes").select("content, company_id").eq("id", minute_id).maybe_single()
         )
         if row is None:
             raise ApiError(404, "회의록을 찾을 수 없습니다.")

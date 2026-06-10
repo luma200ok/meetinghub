@@ -4,7 +4,7 @@ action_items 테이블 CRUD — 회사(company_id) 단위 멀티테넌트 격리
 """
 from typing import Optional
 from app.repositories.base import BaseRepository
-from app.utils.supabase import get_supabase
+from app.utils.supabase import get_supabase, single_or_none
 
 
 class ActionItemRepository(BaseRepository):
@@ -40,14 +40,8 @@ class ActionItemRepository(BaseRepository):
 
     def find_by_id_and_company(self, item_id: str, company_id: str) -> Optional[dict]:
         """단건 조회 + company 소속 검증."""
-        row = (
-            self.table
-            .select("*")
-            .eq("id", item_id)
-            .eq("company_id", company_id)
-            .maybe_single()
-            .execute()
-            .data
+        row = single_or_none(
+            self.table.select("*").eq("id", item_id).eq("company_id", company_id).maybe_single()
         )
         if row is None:
             return None
@@ -112,14 +106,8 @@ class ActionItemRepository(BaseRepository):
     def minute_belongs_to_company(self, minute_id: str, company_id: str) -> bool:
         """회의록이 해당 company에 속하는지 검증."""
         sb = get_supabase()
-        row = (
-            sb.table("meeting_minutes")
-            .select("id")
-            .eq("id", minute_id)
-            .eq("company_id", company_id)
-            .maybe_single()
-            .execute()
-            .data
+        row = single_or_none(
+            sb.table("meeting_minutes").select("id").eq("id", minute_id).eq("company_id", company_id).maybe_single()
         )
         return row is not None
 
