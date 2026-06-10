@@ -1,12 +1,12 @@
 """담당: 김관영 — 조직도 (부서 / 직급 / 직원)"""
 from flask import g
 
-from app.repositories.auth_repository import CompanyMemberRepository
 from app.repositories.organization_repository import (
     DepartmentRepository,
     OrganizationMemberRepository,
     PositionRepository,
 )
+from app.services.tenant_guard import require_member_company, member_role
 
 
 class OrganizationService:
@@ -17,7 +17,7 @@ class OrganizationService:
 
     # 부서
     def list_departments(self) -> list[dict]:
-        return self.departments.find_all(self._company_id())
+        return self.departments.find_all(require_member_company())
 
     def create_department(self, data: dict) -> dict:
         self._require_admin()
@@ -40,7 +40,7 @@ class OrganizationService:
 
     # 직급
     def list_positions(self) -> list[dict]:
-        return self.positions.find_all(self._company_id())
+        return self.positions.find_all(require_member_company())
 
     def create_position(self, data: dict) -> dict:
         self._require_admin()
@@ -49,13 +49,10 @@ class OrganizationService:
 
     # 직원
     def list_members(self) -> list[dict]:
-        return self.members.list_members(self._company_id())
+        return self.members.list_members(require_member_company())
 
     def _company_id(self) -> str:
-        company_id = getattr(g, 'company_id', None)
-        if not company_id:
-            raise ValueError('X-Company-Id 헤더가 필요합니다.')
-        return company_id
+        return require_member_company()
 
     def _user_id(self) -> str:
         user_id = getattr(getattr(g, 'user', None), 'id', None)
@@ -64,7 +61,7 @@ class OrganizationService:
         return user_id
 
     def _require_admin(self) -> None:
-        role = CompanyMemberRepository().role_for(self._user_id(), self._company_id())
+        role = member_role(self._user_id(), self._company_id())
         if role != 'ADMIN':
             raise PermissionError('ADMIN만 조직 정보를 변경할 수 있습니다.')
 

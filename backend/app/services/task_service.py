@@ -10,12 +10,17 @@
 - 모든 경로에서 요청자가 company 구성원인지 검증 (require_member_company)
 - 담당자 지정 시 대상 user가 같은 company 구성원인지 검증 (is_member)
 """
+import uuid
+from datetime import date
+
 from flask import g
 
 from app.repositories.task_repository import ActionItemRepository
 from app.services.tenant_guard import require_member_company, member_role, is_member
 
 VALID_STATUSES = {'TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED'}
+MAX_LIMIT = 100
+MAX_TASK_LEN = 500
 
 
 class TaskService:
@@ -31,9 +36,25 @@ class TaskService:
     ) -> list[dict]:
         if status is not None:
             status = self._valid_status(status)
+        if assignee_id is not None:
+            assignee_id = self._valid_uuid(assignee_id, 'assignee_id')
+        self._validate_pagination(limit, offset)
         return self.tasks.list_in_company(
             self._company_id(), status, assignee_id, limit, offset
         )
+
+    def create(self, data: dict) -> dict:
+        """수동 업무 생성(#45): task 필수. assignee_id 지정 시 같은 company 구성원만."""
+        company_id = self._company_id()
+        source = data or {}
+
+        task_text = self._valid_task(source.get('task'))
+
+        assignee_id = source.get('assignee_id')
+        assignee_id = self._valid_assignee(assignee_id, company_id) if assignee_id else None
+
+        due_date = self._valid_due_date(source.get('due_date'))
+        return self.tasks.create(company_id, task_text, assignee_id, due_date)
 
     def update(self, task_id: str, data: dict) -> dict:
         company_id = self._company_id()
@@ -44,12 +65,9 @@ class TaskService:
         payload: dict = {}
 
         if 'task' in source:
-            task_text = (source.get('task') or '').strip()
-            if not task_text:
-                raise ValueError('업무 내용은 비울 수 없습니다.')
-            payload['task'] = task_text
+            payload['task'] = self._valid_task(source.get('task'))
         if 'due_date' in source:
-            payload['due_date'] = source.get('due_date')
+            payload['due_date'] = self._valid_due_date(source.get('due_date'))
         if 'status' in source:
             payload['status'] = self._valid_status(source.get('status'))
         if 'assignee_id' in source:
@@ -103,6 +121,50 @@ class TaskService:
         if not is_member(assignee_id, company_id):
             raise PermissionError('해당 회사의 구성원만 담당자로 지정할 수 있습니다.')
         return assignee_id
+
+    def _valid_task(self, value) -> str:
+        """업무 내용 검증(P2): 필수 + 최대 길이. 형식 오류는 ValueError(400)."""
+        text = (value or '').strip()
+        if not text:
+            raise ValueError('업무 내용은 필수입니다.')
+        if len(text) > MAX_TASK_LEN:
+            raise ValueError(f'업무 내용은 최대 {MAX_TASK_LEN}자입니다.')
+        return text
+
+    def _valid_due_date(self, value):
+        """마감일 형식 검증(P2): due_date 는 date 컬럼이므로 YYYY-MM-DD. 빈값/None 허용.
+
+        검증 없이 DB로 보내면 잘못된 값이 generic 500으로 노출되므로 여기서 400(ValueError)로 거른다.
+        """
+        if value is None:
+            return None
+        s = str(value).strip()
+        if not s:
+            return None
+        try:
+            date.fromisoformat(s)
+        except (ValueError, TypeError):
+            raise ValueError('due_date 형식이 올바르지 않습니다 (YYYY-MM-DD).')
+        return s
+
+    def _valid_uuid(self, value, field: str):
+        """필터용 UUID 형식 검증(P2). 형식 오류는 ValueError(400)."""
+        try:
+            uuid.UUID(str(value))
+        except (ValueError, AttributeError, TypeError):
+            raise ValueError(f'{field} 형식이 올바르지 않습니다 (UUID).')
+        return value
+
+    def _validate_pagination(self, limit, offset) -> None:
+        """페이지네이션 범위 검증(P2): limit 1~100, offset 0 이상의 정수."""
+        if limit is not None and (
+            not isinstance(limit, int) or isinstance(limit, bool) or limit < 1 or limit > MAX_LIMIT
+        ):
+            raise ValueError(f'limit 은 1~{MAX_LIMIT} 사이의 정수여야 합니다.')
+        if offset is not None and (
+            not isinstance(offset, int) or isinstance(offset, bool) or offset < 0
+        ):
+            raise ValueError('offset 은 0 이상의 정수여야 합니다.')
 
     def _valid_status(self, status: str) -> str:
         if status not in VALID_STATUSES:

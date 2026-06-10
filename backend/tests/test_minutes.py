@@ -182,6 +182,38 @@ class TestMinuteRoutes:
             )
         assert resp.status_code == 404
 
+    # ── Cross-tenant (멤버십 검증) ──────────────────────────────────────────────
+    # 기본 mock_supabase(conftest)는 모든 응답을 MagicMock(truthy)로 반환하므로
+    # require_member_company가 예외를 던지도록 직접 패치한다.
+
+    def test_list_cross_tenant_403(self, client):
+        with patch("app.services.minute_service.require_member_company") as mock_guard:
+            mock_guard.side_effect = PermissionError("해당 회사의 구성원이 아닙니다.")
+            with patch("app.services.minute_service.repo", _repo()):
+                resp = client.get("/api/minutes", headers=auth_headers())
+        assert resp.status_code == 403
+
+    def test_get_cross_tenant_403(self, client):
+        with patch("app.services.minute_service.require_member_company") as mock_guard:
+            mock_guard.side_effect = PermissionError("해당 회사의 구성원이 아닙니다.")
+            with patch("app.services.minute_service.repo", _repo()):
+                resp = client.get("/api/minutes/minute-uuid-1", headers=auth_headers())
+        assert resp.status_code == 403
+
+    def test_get_by_reservation_cross_tenant_403(self, client):
+        with patch("app.services.minute_service.require_member_company") as mock_guard:
+            mock_guard.side_effect = PermissionError("해당 회사의 구성원이 아닙니다.")
+            with patch("app.services.minute_service.repo", _repo()):
+                resp = client.get(f"/api/minutes/by-reservation/{RESERVATION_ID}", headers=auth_headers())
+        assert resp.status_code == 403
+
+    def test_create_cross_tenant_403(self, client):
+        with patch("app.services.minute_service.require_member_company") as mock_guard:
+            mock_guard.side_effect = PermissionError("해당 회사의 구성원이 아닙니다.")
+            with patch("app.services.minute_service.repo", _repo()):
+                resp = client.post("/api/minutes", json={"reservation_id": RESERVATION_ID, "content": "내용"}, headers=auth_headers())
+        assert resp.status_code == 403
+
     def test_health_check(self, client):
         resp = client.get("/health")
         assert resp.status_code == 200

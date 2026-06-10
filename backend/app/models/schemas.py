@@ -89,4 +89,21 @@ class ReservationAttendeeAddRequest(BaseModel):
 
 
 
-# TODO: MeetingRoom / Minute / ActionItem / Notification 스키마 추가
+# ---- AI & Action Items ----
+class ActionItemCreateRequest(BaseModel):
+    minute_id: str
+    task: str
+    assignee_id: Optional[str] = None
+    due_date: Optional[str] = None   # ISO 날짜 문자열 "YYYY-MM-DD"
+    status: Optional[str] = "TODO"
+
+
+class ActionItemUpdateRequest(BaseModel):
+    task: Optional[str] = None
+    assignee_id: Optional[str] = None
+    due_date: Optional[str] = None
+    status: Optional[str] = None
+
+
+class AiAnalyzeRequest(BaseModel):
+    minute_id: str

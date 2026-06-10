@@ -143,7 +143,7 @@ class OrganizationFeatureTest(unittest.TestCase):
         member_repo_cls.return_value.add_member.assert_not_called()
         invitation_repo_cls.return_value.mark_accepted.assert_not_called()
 
-    @patch('app.services.organization_service.CompanyMemberRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
     @patch('app.services.organization_service.PositionRepository')
     @patch('app.services.organization_service.OrganizationMemberRepository')
     @patch('app.services.organization_service.DepartmentRepository')
@@ -154,7 +154,7 @@ class OrganizationFeatureTest(unittest.TestCase):
         _position_repo_cls,
         member_repo_cls,
     ):
-        member_repo_cls.return_value.role_for.return_value = 'ADMIN'
+        member_repo_cls.return_value.find_by_user_company.return_value = {'role': 'ADMIN'}
         department_repo = department_repo_cls.return_value
         department_repo.insert.return_value = {
             'id': 'dept-1',
@@ -168,14 +168,13 @@ class OrganizationFeatureTest(unittest.TestCase):
 
             result = OrganizationService().create_department({'name': 'Product'})
 
-        member_repo_cls.return_value.role_for.assert_called_once_with('admin-1', 'company-1')
         department_repo.insert.assert_called_once_with({
             'company_id': 'company-1',
             'name': 'Product',
         })
         self.assertEqual(result['company_id'], 'company-1')
 
-    @patch('app.services.organization_service.CompanyMemberRepository')
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
     @patch('app.services.organization_service.PositionRepository')
     @patch('app.services.organization_service.OrganizationMemberRepository')
     @patch('app.services.organization_service.DepartmentRepository')
@@ -186,7 +185,7 @@ class OrganizationFeatureTest(unittest.TestCase):
         _position_repo_cls,
         member_repo_cls,
     ):
-        member_repo_cls.return_value.role_for.return_value = 'MEMBER'
+        member_repo_cls.return_value.find_by_user_company.return_value = {'role': 'MEMBER'}
 
         with self.app.test_request_context(headers={'X-Company-Id': 'company-1'}):
             g.user = SimpleNamespace(id='member-1')
@@ -221,6 +220,69 @@ class OrganizationFeatureTest(unittest.TestCase):
         self.assertEqual(bad_response.get_json(), {'error': 'bad request'})
         self.assertEqual(forbidden_response.status_code, 403)
         self.assertEqual(forbidden_response.get_json(), {'error': 'forbidden'})
+
+
+    # ── Cross-tenant (멤버십 검증) ──────────────────────────────────────────────
+
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    @patch('app.services.organization_service.PositionRepository')
+    @patch('app.services.organization_service.OrganizationMemberRepository')
+    @patch('app.services.organization_service.DepartmentRepository')
+    def test_list_departments_rejects_non_member(
+        self,
+        department_repo_cls,
+        _member_list_repo_cls,
+        _position_repo_cls,
+        member_repo_cls,
+    ):
+        member_repo_cls.return_value.find_by_user_company.return_value = None
+
+        with self.app.test_request_context(headers={'X-Company-Id': 'company-1'}):
+            g.user = SimpleNamespace(id='outsider-1')
+            g.company_id = 'company-1'
+
+            with self.assertRaises(PermissionError):
+                OrganizationService().list_departments()
+
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    @patch('app.services.organization_service.PositionRepository')
+    @patch('app.services.organization_service.OrganizationMemberRepository')
+    @patch('app.services.organization_service.DepartmentRepository')
+    def test_list_positions_rejects_non_member(
+        self,
+        _department_repo_cls,
+        _member_list_repo_cls,
+        position_repo_cls,
+        member_repo_cls,
+    ):
+        member_repo_cls.return_value.find_by_user_company.return_value = None
+
+        with self.app.test_request_context(headers={'X-Company-Id': 'company-1'}):
+            g.user = SimpleNamespace(id='outsider-1')
+            g.company_id = 'company-1'
+
+            with self.assertRaises(PermissionError):
+                OrganizationService().list_positions()
+
+    @patch('app.services.tenant_guard.CompanyMemberRepository')
+    @patch('app.services.organization_service.PositionRepository')
+    @patch('app.services.organization_service.OrganizationMemberRepository')
+    @patch('app.services.organization_service.DepartmentRepository')
+    def test_list_members_rejects_non_member(
+        self,
+        _department_repo_cls,
+        _position_repo_cls,
+        member_list_repo_cls,
+        member_repo_cls,
+    ):
+        member_repo_cls.return_value.find_by_user_company.return_value = None
+
+        with self.app.test_request_context(headers={'X-Company-Id': 'company-1'}):
+            g.user = SimpleNamespace(id='outsider-1')
+            g.company_id = 'company-1'
+
+            with self.assertRaises(PermissionError):
+                OrganizationService().list_members()
 
 
 if __name__ == '__main__':

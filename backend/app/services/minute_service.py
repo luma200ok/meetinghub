@@ -11,6 +11,7 @@ from flask import g
 
 from app.repositories.minute_repository import MinuteRepository
 from app.errors import ApiError
+from app.services.tenant_guard import require_member_company
 
 repo = MinuteRepository()
 
@@ -32,12 +33,14 @@ class MinuteService:
             raise ApiError(400, "회의록 내용을 입력해 주세요.")
 
         company_id = self._company_id()
+        user_id = self._user_id()
+
         if not repo.reservation_belongs_to_company(reservation_id, company_id):
             raise ApiError(404, "회의 예약을 찾을 수 없습니다.")
         if repo.exists_for_reservation(reservation_id):
             raise ApiError(409, "이미 해당 회의의 회의록이 존재합니다.")
 
-        return repo.create(reservation_id, content.strip(), self._user_id(), company_id)
+        return repo.create(reservation_id, content.strip(), user_id, company_id)
 
     def get(self, minute_id: str) -> dict:
         data = repo.find_by_id(minute_id, self._company_id())
@@ -75,10 +78,7 @@ class MinuteService:
     # ── 내부 헬퍼 ──────────────────────────────────────────────────────────────
 
     def _company_id(self) -> str:
-        company_id = getattr(g, "company_id", None)
-        if not company_id:
-            raise ApiError(400, "X-Company-Id 헤더가 필요합니다.")
-        return company_id
+        return require_member_company()
 
     def _user_id(self) -> str:
         # main 프로젝트: g.user = Supabase User 객체 (user.id 로 접근)

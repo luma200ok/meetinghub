@@ -45,3 +45,6 @@ next-env.d.ts
 CLAUDE.md
 AGENTS.md
 .claude/
+
+# Playwright MCP 세션 잡파일(콘솔 로그·스냅샷)
+.playwright-mcp/

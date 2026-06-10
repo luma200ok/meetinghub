@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, authHeaders } from "@/lib/api/client";
 import { ENDPOINTS } from "@/lib/api/endpoints";
+import { minutesApi } from "@/lib/api/minutes";
+import { createClient } from "@/lib/supabase/client";
+import type { ApiReservation, Minute } from "@/types";
+import MinuteEditor from "@/components/minutes/MinuteEditor";
+import MinuteViewer from "@/components/minutes/MinuteViewer";
 
 type MeetingRoom = {
   id: string;
@@ -56,12 +61,23 @@ function formatDateString(d: Date): string {
 export default function MeetingRoomsPage() {
   const [accessToken] = useState(() => getStored("meetinghubAccessToken"));
   const [companyId] = useState(() => getStored("meetinghubCompanyId"));
+  const [currentUserId, setCurrentUserId] = useState("");
+
+  // 회의록 모달 상태
+  const [minuteModal, setMinuteModal] = useState<{
+    open: boolean;
+    reservation: ApiReservation | null;
+    minute: Minute | null;
+    loading: boolean;
+    error: string;
+  }>({ open: false, reservation: null, minute: null, loading: false, error: "" });
 
   const [rooms, setRooms] = useState<MeetingRoom[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 주간 캘린더 기준 날짜 (기본 오늘)
   const [currentWeekBase, setCurrentWeekBase] = useState(() => new Date());
@@ -70,11 +86,18 @@ export default function MeetingRoomsPage() {
   // 모달 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
-  const [modalRoomId, setModalRoomId] = useState("");
   const [modalDate, setModalDate] = useState(() => formatDateString(new Date()));
   const [modalStartTime, setModalStartTime] = useState("10:00");
   const [modalEndTime, setModalEndTime] = useState("11:00");
-  const [modalTeamSize, setModalTeamSize] = useState("");
+
+  // 조직도 및 인원 선택 상태
+  const [orgMembers, setOrgMembers] = useState<any[]>([]);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [memberSearch, setMemberSearch] = useState("");
+
+  // 회의실 선택 상태 ("new" 이면 신규 생성)
+  const [modalRoomId, setModalRoomId] = useState<string>("");
+  const [modalNewRoomName, setModalNewRoomName] = useState("");
 
   // AI 추천 문구
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
@@ -97,6 +120,16 @@ export default function MeetingRoomsPage() {
         headers: authHeaders(accessToken, companyId),
       });
       setReservations(resList);
+
+      // 조직 멤버 목록 조회
+      try {
+        const memberList = await api.get<any[]>(ENDPOINTS.MEMBERS, {
+          headers: authHeaders(accessToken, companyId),
+        });
+        setOrgMembers(memberList);
+      } catch (err) {
+        console.error("조직 정보를 불러오는데 실패했습니다:", err);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "데이터를 불러오는데 실패했습니다.");
     } finally {
@@ -108,10 +141,19 @@ export default function MeetingRoomsPage() {
     void loadData();
   }, [loadData]);
 
-  // AI 회의실 추천 반응 로직
+  // 현재 로그인 사용자 id — 회의록 작성자 본인 판별(수정/삭제 버튼)에 사용
   useEffect(() => {
-    const size = parseInt(modalTeamSize, 10);
-    if (!isNaN(size) && size > 0) {
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => setCurrentUserId(data.user?.id ?? ""))
+      .catch(() => setCurrentUserId(""));
+  }, []);
+
+
+  // AI 회의실 추천 반응 로직 (참석 인원 수 기반)
+  useEffect(() => {
+    const size = selectedUserIds.length;
+    if (size > 0) {
       // rooms에서 정렬하여 가장 수용 능력이 작으면서 size를 만족하는 방 찾기
       const sortedRooms = [...rooms].sort((a, b) => (a.capacity || 0) - (b.capacity || 0));
       const recommended = sortedRooms.find((r) => (r.capacity || 0) >= size);
@@ -119,7 +161,7 @@ export default function MeetingRoomsPage() {
       if (recommended) {
         setAiSuggestedRoomId(recommended.id);
         setAiSuggestion(
-          `입력하신 ${size}명의 인원에게는 최적의 수용 환경을 제공하는 [${recommended.name}]이(가) 가장 적합합니다.`
+          `선택하신 ${size}명의 인원에게는 최적의 수용 환경을 제공하는 [${recommended.name}]이(가) 가장 적합합니다.`
         );
       } else {
         setAiSuggestedRoomId(null);
@@ -131,48 +173,68 @@ export default function MeetingRoomsPage() {
       setAiSuggestion(null);
       setAiSuggestedRoomId(null);
     }
-  }, [modalTeamSize, rooms]);
+  }, [selectedUserIds, rooms]);
 
   // 예약 신청
   const handleCreateReservation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!accessToken || !companyId) return;
+
+    if (!accessToken || !companyId) {
+      setError("로그인 정보 또는 회사 ID가 없습니다. 다시 로그인해 주세요.");
+      return;
+    }
+
+    const isNewRoom = modalRoomId === "new";
     if (!modalTitle || !modalRoomId || !modalDate || !modalStartTime || !modalEndTime) {
       setError("필수 입력 필드를 모두 작성해 주세요.");
+      return;
+    }
+    if (isNewRoom && !modalNewRoomName.trim()) {
+      setError("새 회의실 이름을 입력해 주세요.");
+      return;
+    }
+    if (modalStartTime >= modalEndTime) {
+      setError("시작 시각은 종료 시각보다 빨라야 합니다.");
       return;
     }
 
     setError("");
     setSuccessMsg("");
+    setIsSubmitting(true);
 
-    // ISO 8601 시간대 변환 (예: 2026-06-09T10:00:00+09:00)
     const start_at = `${modalDate}T${modalStartTime}:00+09:00`;
-    const end_at = `${modalDate}T${modalEndTime}:00+09:00`;
+    const end_at   = `${modalDate}T${modalEndTime}:00+09:00`;
 
     try {
+      let roomId = modalRoomId;
+
+      if (isNewRoom) {
+        const newRoom = await api.post<MeetingRoom>(
+          ENDPOINTS.MEETING_ROOMS,
+          { name: modalNewRoomName.trim() },
+          { headers: authHeaders(accessToken, companyId) }
+        );
+        roomId = newRoom.id;
+      }
+
       await api.post<Reservation>(
         ENDPOINTS.RESERVATIONS,
-        {
-          room_id: modalRoomId,
-          title: modalTitle,
-          start_at,
-          end_at,
-          user_ids: [],
-        },
-        {
-          headers: authHeaders(accessToken, companyId),
-        }
+        { room_id: roomId, title: modalTitle, start_at, end_at, user_ids: selectedUserIds },
+        { headers: authHeaders(accessToken, companyId) }
       );
+
       setSuccessMsg("예약이 성공적으로 확정되었습니다!");
       setIsModalOpen(false);
-      // 모달 폼 초기화
       setModalTitle("");
       setModalRoomId("");
-      setModalTeamSize("");
-      // 다시 읽어오기
+      setModalNewRoomName("");
+      setSelectedUserIds([]);
+      setMemberSearch("");
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "예약 생성에 실패했습니다.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -191,6 +253,23 @@ export default function MeetingRoomsPage() {
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "예약 취소에 실패했습니다.");
+    }
+  };
+
+  // 예약 블록 클릭 → 회의록 모달 열기. 기존 회의록이 있으면 조회해 viewer로, 없으면 editor로 분기.
+  const handleOpenMinuteModal = async (resId: string) => {
+    const res = reservations.find((r) => r.id === resId);
+    if (!res) return;
+    setMinuteModal({ open: true, reservation: res as unknown as ApiReservation, minute: null, loading: true, error: "" });
+    try {
+      const minute = await minutesApi.getByReservation(resId, accessToken, companyId);
+      setMinuteModal((prev) => (prev.open ? { ...prev, minute, loading: false } : prev));
+    } catch (e) {
+      setMinuteModal((prev) =>
+        prev.open
+          ? { ...prev, loading: false, error: e instanceof Error ? e.message : "회의록을 불러오지 못했습니다." }
+          : prev,
+      );
     }
   };
 
@@ -271,12 +350,12 @@ export default function MeetingRoomsPage() {
         rel="stylesheet"
       />
 
-      <main className="min-h-screen bg-slate-50 text-slate-950 font-sans p-6 lg:p-10 relative overflow-x-hidden">
+      <div className="relative w-full text-on-surface">
         {/* 뒷배경 AI 스파클 그라데이션 장식 */}
         <div className="fixed top-0 right-0 w-[50vw] h-[50vw] -mr-32 -mt-32 bg-primary/5 rounded-full blur-[140px] -z-10"></div>
         <div className="fixed bottom-0 left-0 w-[40vw] h-[40vw] -ml-32 -mb-32 bg-secondary-container/20 rounded-full blur-[120px] -z-10"></div>
 
-        <div className="max-w-7xl mx-auto space-y-8">
+        <div className="w-full space-y-8">
           {/* 에러 및 성공 알림 */}
           {error && (
             <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 flex justify-between items-center animate-in fade-in">
@@ -319,6 +398,19 @@ export default function MeetingRoomsPage() {
                 >
                   <span className="material-symbols-outlined text-sm block">chevron_left</span>
                 </button>
+                <div className="flex items-center border-r border-slate-200 pr-1 mr-1">
+                  <span className="material-symbols-outlined text-slate-400 text-sm pl-2 pointer-events-none">calendar_month</span>
+                  <input
+                    type="date"
+                    value={formatDateString(currentWeekBase)}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setCurrentWeekBase(new Date(e.target.value));
+                      }
+                    }}
+                    className="bg-transparent border-0 px-2 py-1 text-xs font-semibold text-slate-700 outline-none w-28 focus:ring-0 cursor-pointer"
+                  />
+                </div>
                 <button
                   onClick={handleToday}
                   className="px-4 py-1.5 hover:bg-slate-100 text-xs font-semibold rounded-lg text-slate-700 transition-colors"
@@ -335,7 +427,7 @@ export default function MeetingRoomsPage() {
               </div>
 
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => { setIsModalOpen(true); setModalRoomId(""); setModalNewRoomName(""); setError(""); }}
                 className="flex items-center justify-center gap-2 bg-primary text-white px-5 py-3 rounded-xl font-semibold text-sm hover:opacity-90 active:scale-95 shadow-md shadow-primary/20 transition-all cursor-pointer ml-auto md:ml-0"
               >
                 <span className="material-symbols-outlined text-sm">add_circle</span>
@@ -433,9 +525,9 @@ export default function MeetingRoomsPage() {
                           <div
                             key={res.id}
                             style={style}
-                            onClick={() => handleCancelReservation(res.id)}
+                            onClick={() => void handleOpenMinuteModal(res.id)}
                             className={`absolute left-1 right-1 border-l-4 rounded-xl px-2 py-1.5 cursor-pointer hover:scale-[1.02] hover:shadow-sm transition-all overflow-hidden flex flex-col justify-between group ${blockBg}`}
-                            title="클릭하여 예약을 취소합니다"
+                            title="클릭하여 회의록 작성"
                           >
                             <div>
                               <p className="font-bold text-[11px] leading-tight truncate">
@@ -445,9 +537,16 @@ export default function MeetingRoomsPage() {
                                 {room?.name ?? "회의실"} • {timeRangeStr}
                               </p>
                             </div>
-                            <span className="material-symbols-outlined text-[10px] text-red-500 absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                void handleCancelReservation(res.id);
+                              }}
+                              className="material-symbols-outlined text-[10px] text-red-500 absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
+                              title="예약 취소"
+                            >
                               delete
-                            </span>
+                            </button>
                           </div>
                         );
                       })}
@@ -595,7 +694,7 @@ export default function MeetingRoomsPage() {
 
           </div>
         </div>
-      </main>
+      </div>
 
       {/* 공간 예약 모달 오버레이 */}
       {isModalOpen && (
@@ -646,57 +745,135 @@ export default function MeetingRoomsPage() {
                     />
                   </div>
 
-                  {/* 팀 규모 */}
+                  {/* 회의실 선택 */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 px-1">참석 인원 수</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={modalTeamSize}
-                      onChange={(e) => setModalTeamSize(e.target.value)}
-                      placeholder="인원 수 입력"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:ring-4 focus:ring-primary/10 outline-none text-sm text-slate-700 transition-all"
-                    />
+                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 px-1">회의실</label>
+                    <select
+                      required
+                      value={modalRoomId}
+                      onChange={(e) => {
+                        setModalRoomId(e.target.value);
+                        if (e.target.value !== "new") setModalNewRoomName("");
+                      }}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm text-slate-800 transition-all"
+                    >
+                      <option value="" disabled>회의실 선택</option>
+                      {rooms.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.name}{r.capacity ? ` (${r.capacity}인)` : ""}
+                        </option>
+                      ))}
+                      <option value="new">+ 새 회의실 추가</option>
+                    </select>
+                    {modalRoomId === "new" && (
+                      <input
+                        type="text"
+                        value={modalNewRoomName}
+                        onChange={(e) => setModalNewRoomName(e.target.value)}
+                        placeholder="새 회의실 이름 입력"
+                        className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none text-sm text-slate-800 placeholder:text-slate-400 transition-all"
+                      />
+                    )}
                   </div>
                 </div>
 
-                {/* AI 추천 박스 (인원 수에 따라 나타남) */}
+                {/* 참석자 선택 (조직도 연동 및 검색) */}
+                <div>
+                  <div className="flex justify-between items-center mb-1.5 px-1">
+                    <label className="block text-xs font-semibold text-slate-500">참석자 선택</label>
+                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                      선택됨: {selectedUserIds.length}명
+                    </span>
+                  </div>
+                  
+                  {/* 검색 필드 */}
+                  <div className="relative mb-2">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+                      search
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="참석자 이름 또는 이메일 검색..."
+                      value={memberSearch}
+                      onChange={(e) => setMemberSearch(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-slate-50/30 focus:ring-4 focus:ring-primary/5 outline-none text-xs text-slate-800"
+                    />
+                  </div>
+
+                  {/* 멤버 목록 스크롤러 */}
+                  <div className="border border-slate-200 rounded-xl max-h-40 overflow-y-auto divide-y divide-slate-100 bg-slate-50/50 p-2 custom-scrollbar">
+                    {orgMembers
+                      .filter((member) => {
+                        const name = member.user?.name || "";
+                        const email = member.user?.email || "";
+                        return (
+                          name.toLowerCase().includes(memberSearch.toLowerCase()) ||
+                          email.toLowerCase().includes(memberSearch.toLowerCase())
+                        );
+                      })
+                      .map((member) => {
+                        const uId = member.user_id || member.user?.id;
+                        if (!uId) return null;
+                        const isChecked = selectedUserIds.includes(uId);
+
+                        return (
+                          <label
+                            key={member.id}
+                            className="flex items-center gap-3 p-2 hover:bg-white rounded-lg cursor-pointer transition-all"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedUserIds([...selectedUserIds, uId]);
+                                } else {
+                                  setSelectedUserIds(selectedUserIds.filter((id) => id !== uId));
+                                }
+                              }}
+                              className="rounded border-slate-350 text-primary focus:ring-primary h-4 w-4"
+                            />
+                            <div className="flex-grow text-xs flex items-center justify-between">
+                              <div>
+                                <span className="font-semibold text-slate-800">{member.user?.name || "이름 없음"}</span>
+                                <span className="text-slate-450 ml-1.5">({member.user?.email || ""})</span>
+                              </div>
+                              {member.department?.name && (
+                                <span className="text-[9px] bg-slate-205 text-slate-600 px-1.5 py-0.5 rounded font-medium">
+                                  {member.department.name}
+                                </span>
+                              )}
+                            </div>
+                          </label>
+                        );
+                      })}
+                    {orgMembers.length === 0 && (
+                      <p className="text-center text-xs text-slate-400 py-4">불러온 조직원 정보가 없습니다.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* AI 추천 박스 (선택된 인원 수에 따라 나타남) */}
                 {aiSuggestion && (
                   <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start gap-3 transition-all duration-300 animate-in fade-in slide-in-from-top-2">
                     <span className="material-symbols-outlined text-primary text-lg mt-0.5">auto_awesome</span>
                     <div className="flex-1">
-                      <p className="text-xs font-bold text-primary mb-0.5">AI 회의실 제안</p>
+                      <p className="text-xs font-bold text-primary mb-0.5">AI 공간 제안</p>
                       <p className="text-[11px] text-slate-600 leading-relaxed">{aiSuggestion}</p>
                       {aiSuggestedRoomId && (
                         <button
                           type="button"
-                          onClick={() => setModalRoomId(aiSuggestedRoomId)}
+                          onClick={() => {
+                            if (aiSuggestedRoomId) setModalRoomId(aiSuggestedRoomId);
+                          }}
                           className="mt-2 text-[10px] font-bold bg-primary text-white px-3 py-1 rounded-lg hover:opacity-90 active:scale-95 transition-all"
                         >
-                          해당 회의실 바로 선택
+                          제안 공간 선택
                         </button>
                       )}
                     </div>
                   </div>
                 )}
-
-                {/* 회의실 선택 */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 px-1">회의실 선택</label>
-                  <select
-                    required
-                    value={modalRoomId}
-                    onChange={(e) => setModalRoomId(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:ring-4 focus:ring-primary/10 outline-none text-sm text-slate-700 transition-all"
-                  >
-                    <option value="" disabled>사용하실 회의실을 선택하세요</option>
-                    {rooms.map((room) => (
-                      <option key={room.id} value={room.id}>
-                        {room.name} (수용: {room.capacity || "0"}인)
-                      </option>
-                    ))}
-                  </select>
-                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   {/* 시작 시각 */}
@@ -737,12 +914,83 @@ export default function MeetingRoomsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 font-bold text-xs bg-primary text-white rounded-xl shadow-md shadow-primary/20 hover:shadow-lg active:scale-95 transition-all cursor-pointer"
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 font-bold text-xs bg-primary text-white rounded-xl shadow-md shadow-primary/20 hover:shadow-lg active:scale-95 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  예약 확정
+                  {isSubmitting ? "처리 중..." : "예약 확정"}
                 </button>
               </div>
             </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* 회의록 모달 */}
+      {minuteModal.open && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+
+            {/* 헤더 */}
+            <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-primary text-xl">description</span>
+                회의록
+              </h2>
+              <button
+                onClick={() => setMinuteModal({ open: false, reservation: null, minute: null, loading: false, error: "" })}
+                className="material-symbols-outlined text-slate-400 hover:bg-slate-200 rounded-full p-2 transition-colors text-lg cursor-pointer"
+              >
+                close
+              </button>
+            </div>
+
+            <div className="overflow-y-auto p-8 space-y-6">
+              {minuteModal.loading && (
+                <p className="text-sm text-slate-400 text-center py-8">불러오는 중...</p>
+              )}
+              {minuteModal.error && (
+                <p className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                  {minuteModal.error}
+                </p>
+              )}
+
+              {minuteModal.reservation && (() => {
+                const res = minuteModal.reservation;
+                return (
+                  <>
+                    {/* 회의 정보 */}
+                    <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-1">
+                      <p className="font-bold text-slate-800">{res.title}</p>
+                      <p className="text-xs text-slate-500">
+                        {new Date(res.start_at).toLocaleString("ko-KR")} –{" "}
+                        {new Date(res.end_at).toLocaleString("ko-KR")}
+                      </p>
+                    </div>
+
+                    {/* 회의록 작성 / 조회 — 로딩 중에는 editor를 띄우지 않음(빈 화면·중복 저장 방지) */}
+                    {!minuteModal.loading &&
+                      (minuteModal.minute ? (
+                        <MinuteViewer
+                          minute={minuteModal.minute}
+                          currentUserId={currentUserId}
+                          token={accessToken}
+                          companyId={companyId}
+                          onUpdated={(m) => setMinuteModal((prev) => ({ ...prev, minute: m }))}
+                          onDeleted={() => setMinuteModal((prev) => ({ ...prev, minute: null }))}
+                        />
+                      ) : (
+                        <MinuteEditor
+                          reservationId={res.id}
+                          token={accessToken}
+                          companyId={companyId}
+                          onSaved={(m) => setMinuteModal((prev) => ({ ...prev, minute: m }))}
+                        />
+                      ))}
+                  </>
+                );
+              })()}
+            </div>
 
           </div>
         </div>

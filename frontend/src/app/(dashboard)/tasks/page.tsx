@@ -32,6 +32,9 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [newTask, setNewTask] = useState("");
+  const [newDueDate, setNewDueDate] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
   const load = useCallback(async () => {
     if (!accessToken || !companyId) return;
@@ -50,6 +53,28 @@ export default function TasksPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  async function createTask(e: React.FormEvent) {
+    e.preventDefault();
+    const text = newTask.trim();
+    if (!text || isCreating) return;
+    setError("");
+    setIsCreating(true);
+    try {
+      await api.post(
+        ENDPOINTS.TASKS,
+        { task: text, due_date: newDueDate || undefined },
+        { headers: authHeaders(accessToken, companyId) },
+      );
+      setNewTask("");
+      setNewDueDate("");
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "업무 생성에 실패했습니다.");
+    } finally {
+      setIsCreating(false);
+    }
+  }
 
   async function changeStatus(taskId: string, status: TaskStatus) {
     try {
@@ -79,6 +104,33 @@ export default function TasksPage() {
           </div>
         )}
         {error && <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+
+        {accessToken && companyId && (
+          <form onSubmit={createTask} className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:flex-row sm:items-center">
+            <input
+              type="text"
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              placeholder="새 업무 내용을 입력하세요"
+              className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm"
+              maxLength={500}
+            />
+            <input
+              type="date"
+              value={newDueDate}
+              onChange={(e) => setNewDueDate(e.target.value)}
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700"
+              aria-label="마감일"
+            />
+            <button
+              type="submit"
+              disabled={isCreating || !newTask.trim()}
+              className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white disabled:bg-slate-300"
+            >
+              {isCreating ? "추가 중" : "업무 추가"}
+            </button>
+          </form>
+        )}
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {COLUMNS.map((col) => {

@@ -22,6 +22,14 @@ def list_tasks():
     )
 
 
+@tasks_bp.post('')
+@require_auth
+@require_company
+def create_task():
+    # 수동 업무 생성(#45): body {task, assignee_id?, due_date?}
+    return jsonify(_svc.create(request.get_json(silent=True) or {})), 201
+
+
 @tasks_bp.put('/<task_id>')
 @require_auth
 @require_company

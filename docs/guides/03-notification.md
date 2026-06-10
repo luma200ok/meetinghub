@@ -37,7 +37,7 @@
 `backend/app/__init__.py`의 `create_app()` 안에 추가:
 ```python
 from app.utils.scheduler import start_scheduler
-start_scheduler()  # 운영에선 워커 중복 실행 주의
+start_scheduler()
 ```
 
 ## 체크포인트
@@ -48,4 +48,4 @@ start_scheduler()  # 운영에선 워커 중복 실행 주의
 ## 힌트
 - 중복 발송 방지: 발송한 reservation_id를 기록하거나, notifications에 이미 같은 회의 알림이 있는지 확인
 - 프론트는 폴링(주기적 fetch) 또는 Supabase Realtime 구독 둘 다 가능. 우선 폴링부터
-- 실서버에서 gunicorn 워커가 여러 개면 스케줄러가 중복 실행됨 → 워커 1개 또는 별도 프로세스로 분리
+- (`render.yaml`에 `gunicorn main:app --workers 1`로 설정되어 있어 워커 중복 실행 문제 없음)

@@ -9,7 +9,6 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [companyId, setCompanyId] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,8 +46,9 @@ export default function LoginPage() {
       if (data.session?.access_token) {
         localStorage.setItem("meetinghubAccessToken", data.session.access_token);
       }
-      if (companyId) {
-        localStorage.setItem("meetinghubCompanyId", companyId);
+      
+      const existingCompanyId = localStorage.getItem("meetinghubCompanyId");
+      if (existingCompanyId) {
         setMessage("로그인되었습니다. 대시보드로 이동합니다.");
         setTimeout(() => {
           router.push("/dashboard");
@@ -67,8 +67,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="w-full flex flex-col items-center justify-center px-margin-mobile md:px-margin-desktop bg-surface-bright flex-grow pt-24 min-h-screen text-on-surface">
-      <div className="w-full max-w-md">
+    <div className="w-full flex flex-col items-center justify-center px-margin-mobile md:px-margin-desktop bg-background flex-grow pt-16 min-h-screen text-on-surface">
+      <div className="w-full max-w-md bg-surface-container-lowest p-8 md:p-10 rounded-3xl border border-outline-variant/30 shadow-lg relative z-10">
         {/* Brand Anchor */}
         <div className="mb-stack-lg text-center lg:text-left flex items-center justify-center lg:justify-start gap-2">
           <span className="material-symbols-outlined text-primary text-4xl icon-fill" style={{ fontVariationSettings: "'FILL' 1" }}>meeting_room</span>
@@ -148,27 +148,13 @@ export default function LoginPage() {
               />
             </div>
           </div>
-          <div>
-            <label className="block text-xs font-bold text-on-surface-variant mb-unit px-unit" htmlFor="companyId">회사 ID (선택사항)</label>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">corporate_fare</span>
-              <input 
-                className="w-full pl-10 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all text-base outline-none text-on-surface" 
-                id="companyId" 
-                placeholder="회사 ID가 있는 경우 입력하세요" 
-                type="text"
-                value={companyId}
-                onChange={(e) => setCompanyId(e.target.value)}
-              />
-            </div>
-          </div>
 
           <div className="flex items-center gap-2 mb-stack-md px-unit">
             <input className="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary" id="remember" type="checkbox" />
             <label className="text-sm text-on-surface-variant select-none" htmlFor="remember">로그인 상태 유지</label>
           </div>
 
-          <button className="w-full btn-primary-action py-4 text-white text-sm font-semibold rounded-lg flex items-center justify-center gap-2 cursor-pointer disabled:bg-slate-400" disabled={isSubmitting}>
+          <button className="w-full bg-primary hover:bg-primary/90 py-4 text-on-primary text-sm font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md shadow-primary/20 hover:-translate-y-0.5 active:translate-y-0" disabled={isSubmitting}>
             <span>{isSubmitting ? "처리 중..." : "로그인"}</span>
             <span className="material-symbols-outlined text-lg">arrow_forward</span>
           </button>
@@ -184,17 +170,17 @@ export default function LoginPage() {
             <Link className="text-sm font-bold text-primary ml-1 hover:underline" href="/signup">회원가입</Link>
           </p>
         </div>
+
+        {/* Footer Policy */}
+        <div className="mt-8 text-center border-t border-outline-variant/30 pt-6">
+          <p className="text-[10px] text-on-surface-variant/70 leading-normal">
+            MeetingHub 서비스 이용 시 <span className="underline cursor-pointer hover:text-primary transition-colors">이용약관</span> 및 <span className="underline cursor-pointer hover:text-primary transition-colors">개인정보 처리방침</span>에 동의하는 것으로 간주됩니다. <br />
+            © 2024 MeetingHub Inc. All rights reserved.
+          </p>
+        </div>
       </div>
 
-      {/* Footer Policy */}
-      <div className="mt-12 text-center w-full max-w-md">
-        <p className="text-[10px] text-outline leading-normal">
-          MeetingHub 서비스 이용 시 <span className="underline">이용약관</span> 및 <span className="underline">개인정보 처리방침</span>에 동의하는 것으로 간주됩니다. <br />
-          © 2024 MeetingHub Inc. All rights reserved.
-        </p>
-      </div>
-
-      <footer className="py-24 bg-surface-container-low border-t border-outline-variant w-full mt-20">
+      <footer className="py-12 w-full mt-12 opacity-80 hover:opacity-100 transition-opacity">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-stack-lg px-margin-desktop max-w-[1440px] mx-auto">
           <div className="md:col-span-1">
             <div className="flex items-center gap-2 mb-stack-md">

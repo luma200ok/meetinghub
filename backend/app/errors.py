@@ -50,4 +50,6 @@ def register_error_handlers(app: Flask) -> None:
     def handle_500(e):
         if app.debug:
             raise e
+        # 예외 스택을 로그로 남긴다(기존엔 조용히 삼켜 Render 로그에 traceback이 안 남던 버그).
+        app.logger.exception('Unhandled exception')
         return jsonify({'error': 'Internal server error'}), 500

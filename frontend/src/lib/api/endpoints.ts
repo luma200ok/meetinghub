@@ -22,6 +22,10 @@ export const ENDPOINTS = {
   // AI (이은석)
   AI_ANALYZE:        '/api/ai/analyze',
   AI_ACTION_ITEMS:   '/api/ai/action-items',
+  AI_SUMMARIES:      '/api/ai/summaries',
+
+  // Action Items
+  ACTION_ITEMS:      '/api/action-items',
 
   // 업무 & 대시보드 (정재봉)
   TASKS:             '/api/tasks',
@@ -31,3 +35,4 @@ export const ENDPOINTS = {
   // 알림 (송유미)
   NOTIFICATIONS:     '/api/notifications',
 } as const;
+
