@@ -28,7 +28,9 @@ except ImportError:  # pragma: no cover
 
 _OPENAI_DEFAULT_MODEL = "gpt-4o-mini"
 _GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
-_GEMINI_DEFAULT_MODEL = "gemini-2.0-flash"
+# 무료 티어 쿼터가 가장 안정적인 모델. (gemini-2.0-flash 는 일부 계정 무료 티어 limit:0)
+# 필요 시 Render 의 AI_MODEL 로 override 가능.
+_GEMINI_DEFAULT_MODEL = "gemini-1.5-flash"
 
 
 def _resolve_ai_config():
