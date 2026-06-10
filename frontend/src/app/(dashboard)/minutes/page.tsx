@@ -144,10 +144,10 @@ export default function MinutesListPage() {
             <div className="flex items-center justify-between pt-4 border-t border-outline-variant/20 relative z-10 mt-auto">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-xs font-bold">
-                  {(m.author_name ?? m.created_by).slice(0, 1).toUpperCase()}
+                  {(m.author_name ?? "?").slice(0, 1).toUpperCase()}
                 </div>
                 <span className="text-xs text-on-surface-variant font-medium">
-                  {m.author_name ?? m.created_by.slice(0, 8)}
+                  {m.author_name ?? "작성자"}
                 </span>
               </div>
               <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant group-hover:bg-primary group-hover:text-white transition-colors">

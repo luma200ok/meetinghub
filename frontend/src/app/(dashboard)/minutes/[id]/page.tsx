@@ -158,7 +158,7 @@ export default function MinuteDetailPage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[20px] text-primary/60">person</span>
-                <span>작성자: {minute?.author_name ?? minute?.created_by.slice(0, 8)}</span>
+                <span>작성자: {minute?.author_name ?? "작성자"}</span>
               </div>
             </div>
           </div>
