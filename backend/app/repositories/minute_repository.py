@@ -88,7 +88,7 @@ class MinuteRepository(BaseRepository):
         ]
 
     def create(self, reservation_id: str, content: str, created_by: str, company_id: str) -> dict:
-        return (
+        rows = (
             self.table
             .insert({
                 "reservation_id": reservation_id,
@@ -97,17 +97,26 @@ class MinuteRepository(BaseRepository):
                 "company_id": company_id,
             })
             .execute()
-            .data[0]
-        )
+            .data
+        ) or []
+        if not rows:
+            # insert 가 빈 응답을 주면 기존엔 .data[0] 에서 IndexError(=generic 500)가 났다.
+            from app.errors import ApiError
+            raise ApiError(500, "회의록 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.")
+        return self._enrich(rows[0])
 
     def update(self, minute_id: str, content: str) -> dict:
-        return (
+        rows = (
             self.table
             .update({"content": content})
             .eq("id", minute_id)
             .execute()
-            .data[0]
-        )
+            .data
+        ) or []
+        if not rows:
+            from app.errors import ApiError
+            raise ApiError(404, "회의록을 찾을 수 없습니다.")
+        return self._enrich(rows[0])
 
     def delete(self, minute_id: str) -> None:
         self.table.delete().eq("id", minute_id).execute()
