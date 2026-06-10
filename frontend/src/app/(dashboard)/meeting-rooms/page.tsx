@@ -699,10 +699,10 @@ export default function MeetingRoomsPage() {
       {/* 공간 예약 모달 오버레이 */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col">
-            
+          <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+
             {/* 모달 헤더 */}
-            <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
               <h2 className="text-lg font-bold text-slate-800 flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-primary text-xl">add_box</span>
                 회의 공간 예약하기
@@ -715,8 +715,8 @@ export default function MeetingRoomsPage() {
               </button>
             </div>
 
-            {/* 모달 폼 */}
-            <form onSubmit={handleCreateReservation} className="p-8 space-y-6">
+            {/* 모달 폼 — 뷰포트보다 길면 스크롤(하단 버튼 잘림 방지) */}
+            <form onSubmit={handleCreateReservation} className="p-8 space-y-6 overflow-y-auto">
               <div className="space-y-4">
                 
                 {/* 회의 제목 */}

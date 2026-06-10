@@ -68,7 +68,7 @@ export default function MinutesListPage() {
             {isLoading ? "불러오는 중..." : "새로고침"}
           </button>
           <button 
-            onClick={() => router.push('/reservations')}
+            onClick={() => router.push('/meeting-rooms')}
             className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary text-on-primary font-label-md text-label-md shadow-md shadow-primary/20 hover:opacity-90 transition-all hover:-translate-y-0.5 active:translate-y-0"
           >
             <span className="material-symbols-outlined text-[18px]">add</span> 새 분석 시작
@@ -103,7 +103,7 @@ export default function MinutesListPage() {
           <span className="material-symbols-outlined text-6xl text-on-surface-variant/30 mb-4">folder_open</span>
           <p className="text-on-surface-variant font-medium">검색된 회의록이 없습니다.</p>
           <button 
-            onClick={() => router.push('/reservations')}
+            onClick={() => router.push('/meeting-rooms')}
             className="mt-4 px-6 py-2 rounded-xl bg-primary-container text-on-primary-container font-medium hover:bg-primary-container/80 transition-colors"
           >
             예약 목록으로 이동
