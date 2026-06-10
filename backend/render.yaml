@@ -10,7 +10,7 @@ services:
       - key: SUPABASE_URL
         value: https://toptwnqbqrqefhlbeelb.supabase.co
       - key: CORS_ORIGINS
-        value: http://localhost:3000,https://meeting-hub-ai.netlify.app,https://meetinghub-lime.vercel.app,https://meetinghub-rkqkdrn2-8391s-projects.vercel.app,https://meetinghub-git-main-rkqkdrn2-8391s-projects.vercel.app
+        value: http://localhost:3000,https://meetinghub-lime.vercel.app,https://meetinghub-rkqkdrn2-8391s-projects.vercel.app,https://meetinghub-git-main-rkqkdrn2-8391s-projects.vercel.app
       # 시크릿 — Render 대시보드에서 입력 (절대 repo에 두지 않음)
       - key: SECRET_KEY
         sync: false

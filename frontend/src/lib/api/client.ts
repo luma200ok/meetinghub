@@ -8,7 +8,7 @@ function resolveApiBaseUrl(): string {
   if (process.env.NODE_ENV === 'production') {
     throw new Error(
       '[config] NEXT_PUBLIC_API_URL 이 설정되지 않았습니다. ' +
-      '배포 환경(Netlify 등)에 백엔드 URL을 설정한 뒤 다시 빌드하세요. ' +
+      '배포 환경(Vercel 등)에 백엔드 URL을 설정한 뒤 다시 빌드하세요. ' +
       '예: NEXT_PUBLIC_API_URL=https://<backend>.onrender.com',
     );
   }
